@@ -13,7 +13,7 @@ import { instaPhotos, videos, type Video } from "@/lib/media";
 import { addons } from "@/lib/wedding";
 import { LazyVideo } from "@/components/ui/lazy-video";
 import { HorseLine } from "@/components/ui/motifs";
-import { useReducedMotionSafe } from "@/components/ui/hooks";
+import { useReducedMotionSafe, useScrollTransform } from "@/components/ui/hooks";
 import { Reveal, RevealImage } from "@/components/ui/motion";
 
 /*
@@ -182,12 +182,12 @@ function Clip({
 
 function Sun({ progress }: { progress: MotionValue<number> }) {
   const reduce = useReducedMotionSafe();
-  const y = useTransform(progress, [0, 0.94], ["0svh", "64svh"]);
+  const y = useScrollTransform(progress, [0, 0.94], ["0svh", "64svh"]);
   const scale = useTransform(progress, [0, 1], [0.85, 1.3]);
-  const dawn = useTransform(progress, [0, 0.4], [1, 0]);
-  const gold = useTransform(progress, [0.15, 0.55], [0, 1]);
-  const red = useTransform(progress, [0.7, 0.92], [0, 1]);
-  const fade = useTransform(progress, [0.9, 0.99], [1, 0]);
+  const dawn = useScrollTransform(progress, [0, 0.4], [1, 0]);
+  const gold = useScrollTransform(progress, [0.15, 0.55], [0, 1]);
+  const red = useScrollTransform(progress, [0.7, 0.92], [0, 1]);
+  const fade = useScrollTransform(progress, [0.9, 0.99], [1, 0]);
   if (reduce) return null;
 
   return (
@@ -230,7 +230,7 @@ function Bulb({
   hideOnMobile: boolean;
 }) {
   const reduce = useReducedMotionSafe();
-  const opacity = useTransform(progress, [at, at + 0.06], [0.15, 1]);
+  const opacity = useScrollTransform(progress, [at, at + 0.06], [0.15, 1]);
   return (
     <motion.span
       className={`absolute ${hideOnMobile ? "max-md:hidden" : ""}`}

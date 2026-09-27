@@ -14,6 +14,7 @@ export function LazyVideo({
   cap = true,
   ratio = true,
   shade = false,
+  active = true,
 }: {
   video: Video;
   className?: string;
@@ -24,13 +25,19 @@ export function LazyVideo({
   ratio?: boolean;
   // Тёмный градиент снизу поверх ролика
   shade?: boolean;
+  // false — ролик на паузе, даже если в экране (например, карточка перевёрнута)
+  active?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const reduce = useReducedMotion();
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || reduce) return;
+    if (!el) return;
+    if (reduce || !active) {
+      el.pause();
+      return;
+    }
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -48,7 +55,7 @@ export function LazyVideo({
       io.disconnect();
       el.pause();
     };
-  }, [reduce]);
+  }, [reduce, active]);
 
   return (
     <div

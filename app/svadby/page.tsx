@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { contacts, SITE_URL } from "@/lib/site";
-import { faq, venueDays } from "@/lib/wedding";
+import { faq, MAX_GUESTS, venueDays } from "@/lib/wedding";
 import { photos } from "@/lib/photos";
 import { Hero } from "@/components/wedding/hero";
 import { Marquee } from "@/components/wedding/marquee";
 import { WhyHere } from "@/components/wedding/why-here";
 import { Facts } from "@/components/wedding/facts";
 import { DayStory } from "@/components/wedding/day-story";
+import { Ceremony } from "@/components/wedding/ceremony";
+import { Horses } from "@/components/wedding/horses";
+import { Hall } from "@/components/wedding/hall";
+import { EstateMap } from "@/components/wedding/estate-map";
+import { Stay } from "@/components/wedding/stay";
 import { Pricing } from "@/components/wedding/pricing";
 import { Reviews } from "@/components/wedding/reviews";
 import { Faq } from "@/components/wedding/faq";
@@ -63,7 +68,7 @@ function JsonLd() {
       },
       geo: { "@type": "GeoCoordinates", latitude: contacts.geo.lat, longitude: contacts.geo.lng },
       sameAs: [contacts.instagram.href],
-      maximumAttendeeCapacity: 100, // TODO(вместимость): 80 / 100 / 120 — уточнить у клиента
+      maximumAttendeeCapacity: MAX_GUESTS, // TODO(вместимость): см. lib/wedding.ts
     },
     {
       "@context": "https://schema.org",
@@ -100,6 +105,11 @@ export default function WeddingPage() {
       <WhyHere />
       <Facts />
       <DayStory />
+      <Ceremony />
+      <Horses />
+      <Hall />
+      <EstateMap />
+      <Stay />
       <Pricing />
       <Reviews />
       <Faq />

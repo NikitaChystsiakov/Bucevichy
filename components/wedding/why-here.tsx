@@ -5,7 +5,6 @@ import { useRef } from "react";
 import {
   motion,
   useScroll,
-  useTransform,
   type MotionValue,
 } from "motion/react";
 import { ArrowUpRight, Gift } from "@phosphor-icons/react";
@@ -15,7 +14,7 @@ import { instaPhotos, videos, type Video } from "@/lib/media";
 import { LazyVideo } from "@/components/ui/lazy-video";
 import { useBooking } from "@/components/site/booking-provider";
 import { Reveal } from "@/components/ui/motion";
-import { useReducedMotionSafe } from "@/components/ui/hooks";
+import { useReducedMotionSafe, useScrollTransform } from "@/components/ui/hooks";
 
 type Key = (typeof whyHere)[number]["key"];
 
@@ -56,8 +55,8 @@ function Card({
   const media = cardMedia[item.key];
   const under = total - 1 - index; // сколько карточек ещё наедет сверху
   const start = index / total;
-  const scale = useTransform(progress, [start, 1], [1, 1 - under * 0.05]);
-  const dim = useTransform(progress, [start, 1], [0, under * 0.2]);
+  const scale = useScrollTransform(progress, [start, 1], [1, 1 - under * 0.05]);
+  const dim = useScrollTransform(progress, [start, 1], [0, under * 0.2]);
 
   return (
     <div className="sticky top-0 flex h-[100svh] items-center justify-center px-3 md:px-8">

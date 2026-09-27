@@ -14,7 +14,7 @@ import { heroMedia } from "@/lib/media";
 import { useBooking } from "@/components/site/booking-provider";
 import { LazyVideo } from "@/components/ui/lazy-video";
 import { Magnetic } from "@/components/ui/magnetic";
-import { useFinePointer, useReducedMotionSafe } from "@/components/ui/hooks";
+import { useFinePointer, useReducedMotionSafe, useScrollTransform } from "@/components/ui/hooks";
 
 const TITLE = ["Невеста", "приезжает", "верхом"];
 const ACCENT = "верхом";
@@ -90,7 +90,7 @@ export function Hero() {
   // Скролл: заголовок уходит вверх, арка слегка увеличивается
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const titleY = useTransform(scrollYProgress, [0, 1], ["0%", "-45%"]);
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
+  const titleOpacity = useScrollTransform(scrollYProgress, [0, 0.55], [1, 0]);
   const mediaScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
 
   // Курсор: -0.5…0.5 по каждой оси, с пружиной

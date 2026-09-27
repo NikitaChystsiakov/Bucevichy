@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore, type RefObject } from "react";
+import { useTransform, type MotionValue } from "motion/react";
 
 function mediaQueryStore(query: string) {
   const subscribe = (cb: () => void) => {
@@ -66,4 +67,38 @@ export function useFocusTrap(
       previous?.focus({ preventScroll: true });
     };
   }, [ref, active, trap]);
+}
+
+// useTransform для прогресса скролла. motion 13 ускоряет такие преобразования через
+// ViewTimeline/ScrollTimeline и передаёт браузеру ключевые кадры со смещениями, например 0.3 → 0.6,
+// не дополняя их до 0 и 1. За пределами диапазона браузер тянет значение обратно к исходному:
+// прозрачность «после конца» снова падает, солнце снова белеет. Дополняем диапазон сами —
+// ускорение сохраняется, значения за краями держатся.
+export function useScrollTransform(
+  progress: MotionValue<number>,
+  input: number[],
+  output: number[],
+): MotionValue<number>;
+export function useScrollTransform(
+  progress: MotionValue<number>,
+  input: number[],
+  output: string[],
+): MotionValue<string>;
+export function useScrollTransform(
+  progress: MotionValue<number>,
+  input: number[],
+  output: (number | string)[],
+): MotionValue<number> | MotionValue<string> {
+  const i = [...input];
+  const o = [...output];
+  if (i[0] > 0) {
+    i.unshift(0);
+    o.unshift(o[0]);
+  }
+  if (i[i.length - 1] < 1) {
+    i.push(1);
+    o.push(o[o.length - 1]);
+  }
+  // Выход однотипный (только числа или только строки) — гарантируют перегрузки выше
+  return useTransform(progress, i, o) as MotionValue<number>;
 }
