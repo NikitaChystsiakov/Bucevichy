@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+/*
+  Визуальный язык «Хутор от рассвета до гирлянд».
+  Палитра: светлая кость и глубокая хвоя, один акцент — янтарь (свет ретро-гирлянд).
+  Страница начинается днём (светлая) и один раз уходит в вечер (тёмная) в блоке «Как проходит свадьба».
+  Скругления: кнопки и чипсы — pill; панели — 20px; поля ввода — 12px; фото — без скругления или арка.
+*/
+
+@theme {
+  --color-bone: #edeee7;
+  --color-bone-2: #e1e3d9;
+  --color-ink: #15201a;
+  --color-ink-soft: #4a574f;
+  --color-pine-950: #0d1611;
+  --color-pine-900: #132019;
+  --color-pine-800: #1c2d23;
+  --color-pine-700: #2b4234;
+  --color-moss: #6f7f5f;
+  --color-amber: #e3a54f;
+  --color-amber-soft: #f1c98a;
+  --color-mist: #e9e8df;
+  --color-mist-soft: rgb(233 232 223 / 0.72);
+
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-cormorant), "Times New Roman", serif;
+
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bone);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01";
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-amber);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  .display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+  }
+
+  /* Единая тонировка для фото разного качества и разных лет */
+  .photo-grade {
+    filter: saturate(0.9) contrast(1.05) brightness(0.98);
+  }
+
+  .arch {
+    border-radius: 999px 999px 0 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 0.95rem 1.6rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1;
+    transition:
+      transform 0.35s var(--ease-out-soft),
+      background-color 0.35s var(--ease-out-soft),
+      color 0.35s var(--ease-out-soft),
+      border-color 0.35s var(--ease-out-soft);
+  }
+  .btn:active {
+    transform: scale(0.98) translateY(1px);
+  }
+  .btn-amber {
+    background: var(--color-amber);
+    color: var(--color-ink);
+  }
+  .btn-amber:hover {
+    background: var(--color-amber-soft);
+  }
+  .btn-ghost-light {
+    border: 1px solid rgb(233 232 223 / 0.45);
+    color: var(--color-mist);
+    background: rgb(13 22 17 / 0.25);
+    backdrop-filter: blur(8px);
+  }
+  .btn-ghost-light:hover {
+    border-color: var(--color-mist);
+    background: rgb(13 22 17 / 0.45);
+  }
+  .btn-ghost-dark {
+    border: 1px solid rgb(21 32 26 / 0.3);
+    color: var(--color-ink);
+  }
+  .btn-ghost-dark:hover {
+    border-color: var(--color-ink);
+    background: rgb(21 32 26 / 0.05);
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s var(--ease-out-soft);
+  }
+  .link-underline:hover {
+    background-size: 0% 1px;
+    background-position: 100% 100%;
+  }
+}
+
+/* Плёночное зерно: фиксированный слой, не перерисовывается при скролле */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Лампочки гирлянды */
+.bulb {
+  --glow: var(--color-amber);
+  position: absolute;
+  width: 9px;
+  height: 12px;
+  margin-left: -4.5px;
+  border-radius: 50% 50% 45% 45%;
+  background: radial-gradient(circle at 50% 40%, #fff6df 0%, #f7cf86 45%, #d98f33 100%);
+  box-shadow:
+    0 0 6px 2px rgb(247 207 134 / 0.85),
+    0 0 22px 8px rgb(227 165 79 / 0.35);
+}
+.bulb::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 2.5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  background: #3b3a33;
+}
+.bulb-off {
+  background: #5d5a4c;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .twinkle {
+    animation: twinkle var(--dur, 3.2s) ease-in-out var(--delay, 0s) infinite;
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Слайдер гостей */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-amber) var(--fill, 50%),
+    rgb(233 232 223 / 0.22) var(--fill, 50%)
+  );
+  border-radius: 2px;
+}
+.range::-moz-range-track {
+  height: 2px;
+  background: rgb(233 232 223 / 0.22);
+}
+.range::-moz-range-progress {
+  height: 2px;
+  background: var(--color-amber);
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -10px;
+  border-radius: 999px;
+  background: var(--color-amber);
+  border: 4px solid var(--color-pine-900);
+  box-shadow: 0 0 0 1px var(--color-amber);
+}
+.range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--color-amber);
+  border: 4px solid var(--color-pine-900);
+  box-shadow: 0 0 0 1px var(--color-amber);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
