@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -12,17 +12,24 @@ import {
 } from "motion/react";
 import { CaretDown, List, Phone, X } from "@phosphor-icons/react";
 import { contacts, nav, type NavLink } from "@/lib/site";
+import { Horseshoe } from "@/components/ui/motifs";
+import { Magnetic } from "@/components/ui/magnetic";
+import { useFocusTrap } from "@/components/ui/hooks";
 import { useBooking } from "./booking-provider";
 import { BrandIcon } from "./brand-icons";
 
 const NOT_READY = "Этот раздел появится в полной версии сайта";
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`flex flex-col leading-none ${className}`}>
-      <span className="display text-[1.65rem] font-semibold tracking-[-0.01em]">Буцевичи</span>
-      <span className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.22em] opacity-70">
-        конная усадьба
+    <span className={`flex items-center gap-2.5 leading-none ${className}`}>
+      <Horseshoe size={22} className="shrink-0 text-brass" />
+      <span className="flex flex-col">
+        <span className="display text-[1.6rem] font-medium tracking-[-0.01em]">Буцевичи</span>
+        <span className="mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.26em] opacity-60">
+          конная усадьба
+        </span>
       </span>
     </span>
   );
@@ -44,19 +51,20 @@ export function Header() {
   const pathname = usePathname();
   const { openBooking } = useBooking();
   const onNav = useNavClick();
-  const [solid, setSolid] = useState(false);
+  const [compact, setCompact] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDrop, setOpenDrop] = useState<string | null>(null);
 
+  // Сжимается после первых пикселей, прячется при скролле вниз, возвращается при скролле вверх
   useMotionValueEvent(scrollY, "change", (y) => {
     const prev = scrollY.getPrevious() ?? 0;
-    const nextSolid = y > 40;
-    if (nextSolid !== solid) setSolid(nextSolid);
-    const nextHidden = y > 480 && y > prev + 2;
-    const nextShown = y < prev - 2 || y < 480;
-    if (nextHidden && !hidden) setHidden(true);
-    else if (nextShown && hidden) setHidden(false);
+    const nextCompact = y > 40;
+    if (nextCompact !== compact) setCompact(nextCompact);
+    const goingDown = y > prev + 2;
+    const goingUp = y < prev - 2;
+    if (y > 520 && goingDown && !hidden) setHidden(true);
+    else if ((goingUp || y < 520) && hidden) setHidden(false);
   });
 
   useEffect(() => {
@@ -64,6 +72,7 @@ export function Header() {
   }, [menuOpen]);
 
   const isActive = (href: string) => pathname === href;
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   return (
     <>
@@ -72,20 +81,34 @@ export function Header() {
         animate={{ y: hidden && !menuOpen && !reduce ? "-110%" : "0%" }}
         transition={{ type: "spring", stiffness: 300, damping: 36 }}
       >
-        <div
-          className={`transition-[background-color,backdrop-filter,border-color] duration-500 ${
-            solid || menuOpen
-              ? "border-b border-mist/10 bg-pine-950/80 backdrop-blur-xl"
-              : "border-b border-transparent bg-transparent"
-          }`}
-        >
-          <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-6 px-5 text-mist md:h-[72px] md:px-8">
-            <Link href="/svadby" className="shrink-0" aria-label="Конная усадьба Буцевичи">
+        {/* Сжатие без анимации высоты: подложка сжимается scaleY, строка сдвигается translateY.
+            Видимая высота: 72/88px → 60px. */}
+        <div className="relative">
+          <div
+            aria-hidden
+            className={`absolute inset-x-0 top-0 h-[72px] origin-top border-b border-linen/10 bg-forest-deep/80 backdrop-blur-xl transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[88px] ${
+              compact || menuOpen
+                ? "scale-y-[0.8333] opacity-100 md:scale-y-[0.6818]"
+                : "opacity-0"
+            }`}
+          />
+          <div
+            className={`pointer-events-none relative mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-6 px-4 text-linen transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[88px] md:px-8 [&>*]:pointer-events-auto ${
+              compact ? "-translate-y-1.5 md:-translate-y-3.5" : ""
+            }`}
+          >
+            <Link
+              href="/svadby"
+              className={`shrink-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                compact ? "scale-[0.86]" : ""
+              }`}
+              aria-label="Конная усадьба Буцевичи"
+            >
               <Wordmark />
             </Link>
 
             <nav aria-label="Основное меню" className="hidden lg:block">
-              <ul className="flex items-center gap-1">
+              <ul className="flex items-center gap-0.5">
                 {nav.map((item) => {
                   const hasChildren = !!item.children;
                   const childActive = item.children?.some((c) => isActive(c.href));
@@ -99,13 +122,11 @@ export function Header() {
                       {hasChildren ? (
                         <button
                           type="button"
-                          className={`flex items-center gap-1 rounded-full px-3.5 py-2 text-[0.92rem] transition hover:text-amber-soft ${
-                            childActive ? "text-amber-soft" : ""
+                          className={`flex items-center gap-1 rounded-full px-3.5 py-2 text-[0.9rem] transition hover:text-brass ${
+                            childActive ? "text-brass" : ""
                           }`}
                           aria-expanded={openDrop === item.label}
-                          onClick={() =>
-                            setOpenDrop(openDrop === item.label ? null : item.label)
-                          }
+                          onClick={() => setOpenDrop(openDrop === item.label ? null : item.label)}
                         >
                           {item.label}
                           <CaretDown
@@ -118,8 +139,9 @@ export function Header() {
                       ) : (
                         <Link
                           href={item.href}
+                          prefetch={item.ready ? undefined : false}
                           onClick={onNav(item)}
-                          className="block rounded-full px-3.5 py-2 text-[0.92rem] transition hover:text-amber-soft"
+                          className="block rounded-full px-3.5 py-2 text-[0.9rem] transition hover:text-brass"
                         >
                           {item.label}
                         </Link>
@@ -131,26 +153,27 @@ export function Header() {
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 6 }}
-                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.25, ease: EASE }}
                             className="absolute left-0 top-full pt-2"
                           >
-                            <ul className="min-w-[240px] rounded-[20px] border border-mist/10 bg-pine-900/95 p-2 shadow-[0_24px_60px_rgb(13_22_17/0.45)] backdrop-blur-xl">
+                            <ul className="min-w-[240px] rounded-[20px] border border-linen/10 bg-forest/95 p-2 shadow-[0_24px_60px_rgb(0_0_0/0.45)] backdrop-blur-xl">
                               {item.children!.map((child) => (
                                 <li key={child.label}>
                                   <Link
                                     href={child.href}
+                                    prefetch={child.ready ? undefined : false}
                                     onClick={(e) => {
                                       onNav(child)(e);
                                       setOpenDrop(null);
                                     }}
                                     aria-current={isActive(child.href) ? "page" : undefined}
-                                    className={`flex items-center justify-between rounded-[14px] px-4 py-3 text-[0.95rem] transition hover:bg-mist/[0.06] ${
-                                      isActive(child.href) ? "text-amber-soft" : "text-mist"
+                                    className={`flex items-center justify-between rounded-[14px] px-4 py-3 text-[0.95rem] transition hover:bg-linen/[0.06] ${
+                                      isActive(child.href) ? "text-brass" : "text-linen"
                                     }`}
                                   >
                                     {child.label}
                                     {isActive(child.href) && (
-                                      <span className="text-[0.7rem] text-amber-soft/80">вы здесь</span>
+                                      <span className="text-[0.7rem] text-brass/80">вы здесь</span>
                                     )}
                                   </Link>
                                 </li>
@@ -165,24 +188,26 @@ export function Header() {
               </ul>
             </nav>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <a
                 href={contacts.phoneMain.href}
-                className="hidden text-[0.92rem] tabular-nums transition hover:text-amber-soft xl:block"
+                className="hidden text-[0.9rem] tabular-nums transition hover:text-brass xl:block"
               >
                 {contacts.phoneMain.display}
               </a>
-              <button
-                type="button"
-                onClick={() => openBooking()}
-                className="btn btn-amber hidden px-5 py-3 text-[0.88rem] lg:inline-flex xl:ml-4"
-              >
-                Узнать свободную дату
-              </button>
+              <Magnetic className="hidden lg:inline-flex xl:ml-4" strength={0.25}>
+                <button
+                  type="button"
+                  onClick={() => openBooking()}
+                  className="btn btn-brass px-5 py-3 text-[0.86rem]"
+                >
+                  Узнать свободную дату
+                </button>
+              </Magnetic>
               <a
                 href={contacts.phoneMain.href}
                 aria-label={`Позвонить: ${contacts.phoneMain.display}`}
-                className="grid size-11 place-items-center rounded-full transition hover:bg-mist/10 lg:hidden"
+                className="grid size-11 place-items-center rounded-full transition hover:bg-linen/10 lg:hidden"
               >
                 <Phone size={21} />
               </a>
@@ -192,7 +217,7 @@ export function Header() {
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
                 aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
-                className="grid size-11 place-items-center rounded-full transition hover:bg-mist/10 lg:hidden"
+                className="grid size-11 place-items-center rounded-full transition hover:bg-linen/10 lg:hidden"
               >
                 {menuOpen ? <X size={22} /> : <List size={22} />}
               </button>
@@ -201,7 +226,7 @@ export function Header() {
         </div>
       </motion.header>
 
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu open={menuOpen} onClose={closeMenu} />
     </>
   );
 }
@@ -209,6 +234,19 @@ export function Header() {
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const onNav = useNavClick();
   const pathname = usePathname();
+  const { openBooking } = useBooking();
+  const ref = useRef<HTMLDivElement>(null);
+  // Фокус в меню при открытии и обратно на кнопку при закрытии. Tab не запираем:
+  // кнопка «Закрыть меню» находится в шапке, вне этого контейнера.
+  useFocusTrap(ref, open, { trap: false });
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   const flat = nav.flatMap((item) =>
     item.children ? item.children.map((c) => ({ ...c, group: item.label })) : [{ ...item, group: "" }],
   );
@@ -217,15 +255,16 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
     <AnimatePresence>
       {open && (
         <motion.div
+          ref={ref}
           id="mobile-menu"
-          className="fixed inset-0 z-[65] flex flex-col bg-pine-950 px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-24 text-mist lg:hidden"
+          className="fixed inset-0 z-[65] flex flex-col bg-forest-deep px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-24 text-linen lg:hidden"
           initial={{ clipPath: "inset(0 0 100% 0)" }}
           animate={{ clipPath: "inset(0 0 0% 0)" }}
           exit={{ clipPath: "inset(0 0 100% 0)" }}
           transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
         >
           <nav aria-label="Мобильное меню" className="flex-1 overflow-y-auto">
-            <ul className="grid gap-1">
+            <ul className="grid">
               {flat.map((link, i) => {
                 const active = pathname === link.href && link.ready;
                 return (
@@ -233,21 +272,25 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                     key={link.label}
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.18 + i * 0.035, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ delay: 0.18 + i * 0.035, duration: 0.5, ease: EASE }}
+                    className="border-b border-dashed border-linen/10"
                   >
                     <Link
                       href={link.href}
+                      prefetch={link.ready ? undefined : false}
                       onClick={(e) => {
                         onNav(link)(e);
                         if (link.ready) onClose();
                       }}
-                      className={`display flex items-baseline justify-between py-1.5 text-[2rem] ${
-                        active ? "text-amber-soft" : ""
+                      className={`display flex items-baseline justify-between py-2.5 text-[1.9rem] ${
+                        active ? "italic text-brass" : ""
                       }`}
                     >
                       {link.label}
                       {link.group && (
-                        <span className="font-sans text-xs text-mist/40">{link.group}</span>
+                        <span className="font-sans text-[0.7rem] uppercase tracking-[0.18em] text-linen/35">
+                          {link.group}
+                        </span>
                       )}
                     </Link>
                   </motion.li>
@@ -258,24 +301,33 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { delay: 0.45 } }}
-            className="mt-6 grid gap-3 border-t border-mist/10 pt-6 text-sm"
+            className="mt-5 grid gap-4 pt-2 text-sm"
           >
-            <a href={contacts.phoneMain.href} className="text-lg tabular-nums">
-              {contacts.phoneMain.display}
-            </a>
-            <a href={contacts.phoneSecond.href} className="tabular-nums text-mist-soft">
-              {contacts.phoneSecond.display}
-            </a>
-            <div className="flex gap-5 text-mist-soft">
-              <a href={contacts.viber} className="flex items-center gap-2">
-                <BrandIcon name="viber" size={16} /> Viber
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openBooking();
+              }}
+              className="btn btn-brass w-full py-4"
+            >
+              Узнать свободную дату
+            </button>
+            <div className="flex items-center justify-between gap-4 text-linen/70">
+              <a href={contacts.phoneMain.href} className="text-base tabular-nums text-linen">
+                {contacts.phoneMain.display}
               </a>
-              <a href={contacts.telegram} className="flex items-center gap-2" target="_blank" rel="noopener noreferrer">
-                <BrandIcon name="telegram" size={16} /> Telegram
-              </a>
-              <a href={contacts.instagram.href} className="flex items-center gap-2" target="_blank" rel="noopener noreferrer">
-                <BrandIcon name="instagram" size={16} /> Instagram
-              </a>
+              <div className="flex gap-4">
+                <a href={contacts.viber} aria-label="Viber">
+                  <BrandIcon name="viber" size={19} />
+                </a>
+                <a href={contacts.telegram} aria-label="Telegram" target="_blank" rel="noopener noreferrer">
+                  <BrandIcon name="telegram" size={19} />
+                </a>
+                <a href={contacts.instagram.href} aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                  <BrandIcon name="instagram" size={19} />
+                </a>
+              </div>
             </div>
           </motion.div>
         </motion.div>

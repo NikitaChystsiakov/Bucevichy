@@ -10,6 +10,8 @@ export function DemoLink({ link, className }: { link: NavLink; className?: strin
   return (
     <Link
       href={link.href}
+      // Раздела ещё нет — не запрашиваем его заранее (иначе 404 в консоли)
+      prefetch={link.ready ? undefined : false}
       className={className}
       onClick={(e) => {
         if (!link.ready) {

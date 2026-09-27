@@ -1,22 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Onest } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { BookingProvider } from "@/components/site/booking-provider";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { MobileDock } from "@/components/site/mobile-dock";
+import { Preloader } from "@/components/site/preloader";
 
-const onest = Onest({
-  variable: "--font-onest",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
 });
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin", "cyrillic"],
-  weight: ["500", "600"],
+  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
 });
 
@@ -32,16 +32,29 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d1611",
+  themeColor: "#141c17",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${onest.variable} ${cormorant.variable} antialiased`}>
+    // suppressHydrationWarning: инлайн-скрипт прелоадера ставит data-preloader до гидратации
+    <html
+      lang="ru"
+      className={`${manrope.variable} ${cormorant.variable} antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh">
+        {/* Первым в body: инлайн-скрипт решает про шторку до отрисовки остального */}
+        <Preloader />
         <BookingProvider>
           <Header />
-          {children}
+          {/* Страница лежит поверх футера и при докрутке «открывает» его (sticky reveal) */}
+          <div className="relative z-10 bg-forest-deep shadow-[0_30px_60px_-10px_rgb(0_0_0/0.6)]">
+            {children}
+            {/* Метка конца страницы: якорь «Контакты» (#kontakty) и сигнал нижней панели,
+                что открывается футер. Сам футер sticky, поэтому якорь стоит здесь, а не на нём */}
+            <div id="kontakty" aria-hidden />
+          </div>
           <Footer />
           <MobileDock />
         </BookingProvider>

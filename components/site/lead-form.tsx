@@ -13,8 +13,8 @@ export type LeadPreset = {
 type Status = "idle" | "sending" | "sent" | "error";
 
 const field =
-  "w-full rounded-[12px] border border-mist/20 bg-pine-950/40 px-4 py-3.5 text-[16px] text-mist outline-none transition placeholder:text-mist/45 focus:border-amber focus:bg-pine-950/60";
-const label = "text-[0.8rem] font-medium text-mist-soft";
+  "w-full rounded-[12px] border border-linen/20 bg-forest-deep/40 px-4 py-3.5 text-[16px] text-linen outline-none transition placeholder:text-linen/45 focus:border-brass focus:bg-forest-deep/60";
+const label = "text-[0.8rem] font-medium text-linen/70";
 
 export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus?: boolean }) {
   const id = useId();
@@ -55,9 +55,9 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           className="flex flex-col items-start gap-3 py-4"
           role="status"
         >
-          <CheckCircle size={40} weight="light" className="text-amber" />
+          <CheckCircle size={40} weight="light" className="text-brass" />
           <p className="display text-[1.9rem]">Заявка у нас</p>
-          <p className="max-w-[40ch] text-mist-soft">
+          <p className="max-w-[40ch] text-linen/70">
             {isVisit
               ? "Перезвоним и договоримся, когда вам удобно приехать посмотреть усадьбу."
               : "Перезвоним и скажем, свободна ли ваша дата."}
@@ -65,7 +65,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           <button
             type="button"
             onClick={() => setStatus("idle")}
-            className="link-underline mt-2 text-sm text-mist-soft"
+            className="link-underline mt-2 text-sm text-linen/70"
           >
             Отправить ещё одну заявку
           </button>
@@ -104,13 +104,13 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel"
-                className={`${field} ${phoneError ? "border-amber" : ""}`}
+                className={`${field} ${phoneError ? "border-brass" : ""}`}
                 placeholder="+375 __ ___-__-__"
                 aria-invalid={!!phoneError}
                 aria-describedby={phoneError ? `${id}-phone-err` : undefined}
               />
               {phoneError && (
-                <p id={`${id}-phone-err`} className="text-[0.8rem] text-amber-soft">
+                <p id={`${id}-phone-err`} className="text-[0.8rem] text-brass">
                   {phoneError}
                 </p>
               )}
@@ -149,7 +149,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
 
           <div className="grid gap-2">
             <label htmlFor={`${id}-note`} className={label}>
-              Комментарий <span className="font-normal text-mist/45">(необязательно)</span>
+              Комментарий <span className="font-normal text-linen/45">(необязательно)</span>
             </label>
             <textarea
               id={`${id}-note`}
@@ -162,7 +162,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           </div>
 
           {status === "error" && (
-            <p className="flex items-center gap-2 text-sm text-amber-soft" role="alert">
+            <p className="flex items-center gap-2 text-sm text-brass" role="alert">
               <WarningCircle size={18} />
               Не получилось отправить. Позвоните нам или попробуйте ещё раз.
             </p>
@@ -171,12 +171,12 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           <button
             type="submit"
             disabled={status === "sending"}
-            className="btn btn-amber mt-1 w-full py-4 text-base disabled:opacity-70"
+            className="btn btn-brass mt-1 w-full py-4 text-base disabled:opacity-70"
           >
             {status === "sending" ? "Отправляем…" : isVisit ? "Договориться о визите" : "Узнать свободную дату"}
             {status !== "sending" && <ArrowRight size={18} />}
           </button>
-          <p className="text-center text-xs text-mist/50">
+          <p className="text-center text-xs text-linen/50">
             Нажимая кнопку, вы соглашаетесь на обработку персональных данных
           </p>
         </motion.form>

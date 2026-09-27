@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { useRef } from "react";
-import { motion, useInView, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useInView, useScroll, useTransform } from "motion/react";
 import type { Photo } from "@/lib/photos";
+import { useReducedMotionSafe } from "./hooks";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -21,15 +22,17 @@ export function Reveal({
   className?: string;
   as?: "div" | "li" | "p" | "span";
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   const Tag = motion[as];
   return (
     <Tag
       className={className}
-      initial={reduce ? false : { opacity: 0, y }}
+      // Начальное состояние одинаковое на сервере и клиенте (иначе при reduced-motion
+      // элемент остаётся невидимым после гидратации); при reduced-motion — без анимации
+      initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.9, delay, ease: EASE }}
+      transition={reduce ? { duration: 0 } : { duration: 0.9, delay, ease: EASE }}
     >
       {children}
     </Tag>
@@ -57,7 +60,7 @@ export function RevealImage({
   delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   // Следим за внешней обёрткой: у обрезанного clip-path элемента IntersectionObserver
   // в Chrome видит нулевую площадь, и анимация не запускается
   const inView = useInView(ref, { once: true, amount: 0.15 });
@@ -74,17 +77,17 @@ export function RevealImage({
       } ${className}`}
     >
       <motion.div
-        className="absolute inset-0 overflow-hidden bg-pine-800"
-        initial={reduce ? false : { clipPath: "inset(100% 0% 0% 0%)" }}
+        className="absolute inset-0 overflow-hidden bg-forest"
+        initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
         animate={shown ? { clipPath: "inset(0% 0% 0% 0%)" } : undefined}
-        transition={{ duration: 1.2, delay, ease: [0.76, 0, 0.24, 1] }}
+        transition={reduce ? { duration: 0 } : { duration: 1.2, delay, ease: [0.76, 0, 0.24, 1] }}
       >
         <motion.div
           className="absolute inset-0"
           style={parallax && !reduce ? { y } : undefined}
-          initial={reduce ? false : { scale: 1.18 }}
-          animate={shown ? { scale: restScale } : undefined}
-          transition={{ duration: 1.6, delay, ease: EASE }}
+          initial={{ scale: 1.18 }}
+          animate={shown ? { scale: reduce ? 1 : restScale } : undefined}
+          transition={reduce ? { duration: 0 } : { duration: 1.6, delay, ease: EASE }}
         >
           <Image
             src={photo.src}
@@ -117,7 +120,7 @@ export function SplitWords({
   animateOnMount?: boolean;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionSafe();
   // Наблюдаем за всей строкой, а не за словами: слова спрятаны под маской,
   // и IntersectionObserver их «не видит»
   const inView = useInView(ref, { once: true, amount: 0.4 });
@@ -130,9 +133,9 @@ export function SplitWords({
           <span className="inline-block overflow-hidden pb-[0.12em] align-top">
             <motion.span
               className={`inline-block ${emphasis.includes(w) ? emphasisClass : ""}`}
-              initial={reduce ? false : { y: "105%" }}
+              initial={{ y: "105%" }}
               animate={go ? { y: "0%" } : undefined}
-              transition={{ duration: 1, delay: delay + i * 0.07, ease: EASE }}
+              transition={reduce ? { duration: 0 } : { duration: 1, delay: delay + i * 0.07, ease: EASE }}
             >
               {w}
             </motion.span>

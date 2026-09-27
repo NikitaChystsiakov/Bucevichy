@@ -34,26 +34,35 @@ function Counter({ value, prefix, suffix }: { value: number; prefix: string; suf
 
   return (
     <span className="tabular-nums">
-      {prefix && <span className="text-[0.55em] italic text-ink-soft">{prefix}</span>}
+      {prefix && <span className="font-display text-[0.55em] italic text-linen/60">{prefix}</span>}
       <span ref={ref}>{format(value, decimals)}</span>
-      {suffix && <span className="text-[0.55em]">{suffix}</span>}
+      {suffix && <span className="text-[0.5em] text-linen/80">{suffix}</span>}
     </span>
   );
 }
 
+// Усадьба в цифрах — под карточками «Почему здесь»
 export function Facts() {
   return (
-    <section aria-label="Усадьба в цифрах" className="bg-bone pb-24 md:pb-32">
-      <ul className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-5 gap-y-10 border-t border-ink/15 px-5 pt-10 md:grid-cols-3 md:px-8 lg:grid-cols-6 lg:gap-x-8">
-        {facts.map((f, i) => (
-          <Reveal as="li" key={f.label} delay={i * 0.06} className="flex flex-col gap-2">
-            <span className="display text-[2.6rem] leading-none text-ink md:text-[3.2rem]">
-              <Counter value={f.value} prefix={f.prefix} suffix={f.suffix} />
-            </span>
-            <span className="max-w-[18ch] text-sm leading-snug text-ink-soft">{f.label}</span>
-          </Reveal>
-        ))}
-      </ul>
+    <section aria-label="Усадьба в цифрах" className="bg-forest-deep pb-24 pt-8 md:pb-36 md:pt-16">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-8">
+        <span aria-hidden className="stitch block text-brass" />
+        <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {facts.map((f, i) => (
+            <Reveal
+              as="li"
+              key={f.label}
+              delay={i * 0.06}
+              className="flex flex-col gap-3 border-dashed border-linen/15 py-8 pr-4 max-md:nth-[n+3]:border-t md:max-lg:nth-[n+4]:border-t lg:border-l lg:px-6 lg:first:border-l-0 lg:first:pl-0"
+            >
+              <span className="text-[2.7rem] font-extralight leading-none tracking-[-0.04em] text-brass md:text-[3.3rem]">
+                <Counter value={f.value} prefix={f.prefix} suffix={f.suffix} />
+              </span>
+              <span className="max-w-[18ch] text-[0.88rem] leading-snug text-linen/65">{f.label}</span>
+            </Reveal>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

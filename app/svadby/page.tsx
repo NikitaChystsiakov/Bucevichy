@@ -3,7 +3,8 @@ import { contacts, SITE_URL } from "@/lib/site";
 import { faq, venueDays } from "@/lib/wedding";
 import { photos } from "@/lib/photos";
 import { Hero } from "@/components/wedding/hero";
-import { Intro } from "@/components/wedding/intro";
+import { Marquee } from "@/components/wedding/marquee";
+import { WhyHere } from "@/components/wedding/why-here";
 import { Facts } from "@/components/wedding/facts";
 import { DayStory } from "@/components/wedding/day-story";
 import { Pricing } from "@/components/wedding/pricing";
@@ -62,7 +63,7 @@ function JsonLd() {
       },
       geo: { "@type": "GeoCoordinates", latitude: contacts.geo.lat, longitude: contacts.geo.lng },
       sameAs: [contacts.instagram.href],
-      maximumAttendeeCapacity: 100,
+      maximumAttendeeCapacity: 100, // TODO(вместимость): 80 / 100 / 120 — уточнить у клиента
     },
     {
       "@context": "https://schema.org",
@@ -95,7 +96,8 @@ export default function WeddingPage() {
     <main>
       <JsonLd />
       <Hero />
-      <Intro />
+      <Marquee />
+      <WhyHere />
       <Facts />
       <DayStory />
       <Pricing />

@@ -45,5 +45,6 @@ export const nav: NavItem[] = [
   },
   { label: "Сертификаты", href: "/sertifikaty" },
   { label: "Отзывы", href: "/otzyvy" },
-  { label: "Контакты", href: "/kontakty" },
+  // Контакты в демо — футер этой же страницы. TODO(сайт): отдельная страница /kontakty
+  { label: "Контакты", href: "#kontakty", ready: true },
 ];
