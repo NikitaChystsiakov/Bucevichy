@@ -6,6 +6,7 @@ import { ArrowRight, Phone } from "@phosphor-icons/react";
 import { contacts } from "@/lib/site";
 import { useBooking } from "./booking-provider";
 import { BrandIcon } from "./brand-icons";
+import { Magnetic } from "@/components/ui/magnetic";
 
 // Панель с главным действием: на телефоне — внизу во всю ширину, на десктопе — плавающая
 // справа внизу (шапка при скролле вниз прячется, кнопка должна оставаться доступной).
@@ -15,6 +16,7 @@ export function MobileDock() {
   const { openBooking } = useBooking();
   const [pastHero, setPastHero] = useState(false);
   const [atFooter, setAtFooter] = useState(false);
+  const [ownCta, setOwnCta] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (y) => {
     const next = y > window.innerHeight * 0.7;
@@ -35,7 +37,24 @@ export function MobileDock() {
     return () => io.disconnect();
   }, []);
 
-  const visible = pastHero && !atFooter;
+  // Блоки со своей главной кнопкой (калькулятор, форма заявки) помечены data-dock-hide:
+  // пока такая кнопка в экране, панель не дублирует её и не перекрывает
+  useEffect(() => {
+    const els = document.querySelectorAll("[data-dock-hide]");
+    if (!els.length) return;
+    const seen = new Set<Element>();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) seen.add(e.target);
+        else seen.delete(e.target);
+      }
+      setOwnCta(seen.size > 0);
+    });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  const visible = pastHero && !atFooter && !ownCta;
   const icon =
     "grid size-11 shrink-0 place-items-center rounded-full lg:size-12 text-linen transition active:scale-95 active:bg-linen/10";
 
@@ -55,14 +74,17 @@ export function MobileDock() {
               aria-hidden
               className="pointer-events-none absolute inset-[3px] rounded-full border border-dashed border-brass/35"
             />
-            <button
-              type="button"
-              onClick={() => openBooking()}
-              className="btn btn-brass relative h-12 min-w-0 flex-1 gap-2 px-4 text-[0.88rem]"
-            >
-              <span className="truncate">Узнать свободную дату</span>
-              <ArrowRight size={16} className="shrink-0 max-[359px]:hidden" />
-            </button>
+            {/* Магнит работает только с мышью (на десктопе панель плавающая) */}
+            <Magnetic className="relative flex min-w-0 flex-1" strength={0.2}>
+              <button
+                type="button"
+                onClick={() => openBooking()}
+                className="btn btn-brass h-12 min-w-0 flex-1 gap-2 px-4 text-[0.88rem]"
+              >
+                <span className="truncate">Узнать свободную дату</span>
+                <ArrowRight size={16} className="shrink-0 max-[359px]:hidden" />
+              </button>
+            </Magnetic>
             <a href={contacts.phoneMain.href} className={icon} aria-label="Позвонить">
               <Phone size={20} />
             </a>

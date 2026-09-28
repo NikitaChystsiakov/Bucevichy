@@ -8,6 +8,7 @@ import { houses, stay, type HouseKey } from "@/lib/wedding";
 import { photos, type Photo } from "@/lib/photos";
 import { useBooking } from "@/components/site/booking-provider";
 import { Reveal } from "@/components/ui/motion";
+import { Magnetic } from "@/components/ui/magnetic";
 import { useFinePointer, useReducedMotionSafe } from "@/components/ui/hooks";
 
 /*
@@ -171,10 +172,12 @@ export function Stay() {
           <p className="max-w-[46ch] text-[0.95rem] leading-relaxed text-forest-deep/70">
             Стоимость ночлега в сезон свадеб назовём, когда обсудим вашу дату.
           </p>
-          <button type="button" onClick={() => openBooking()} className="btn btn-brass group">
-            Узнать свободную дату
-            <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-          </button>
+          <Magnetic>
+            <button type="button" onClick={() => openBooking()} className="btn btn-brass group">
+              Узнать свободную дату
+              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+            </button>
+          </Magnetic>
         </Reveal>
       </div>
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, type RefObject } from "react";
+import { useEffect, useState, useSyncExternalStore, type RefObject } from "react";
 import { useTransform, type MotionValue } from "motion/react";
 
 function mediaQueryStore(query: string) {
@@ -27,6 +27,29 @@ const reducedMotion = mediaQueryStore("(prefers-reduced-motion: reduce)");
 // на клиенте совпадает с серверным (false). Использовать там, где от флага зависит разметка.
 export function useReducedMotionSafe() {
   return useSyncExternalStore(reducedMotion.subscribe, reducedMotion.get, () => false);
+}
+
+// Элемент подошёл к экрану (один раз): margin — насколько заранее, в долях экрана.
+// Для тяжёлых картинок сразу под первым экраном: native lazy у Chrome срабатывает за 1250–2500px
+// и на телефоне отнимает канал у первого экрана.
+export function useNear(ref: RefObject<Element | null>, margin = "50%") {
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: `${margin} 0px ${margin} 0px` },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, margin, near]);
+  return near;
 }
 
 const FOCUSABLE =

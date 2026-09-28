@@ -159,4 +159,11 @@ export const photos = {
     297,
     "Парная бани на дровах: полок, шайка и каменка",
   ),
+  // Этап 3: галерея
+  whiteHorseForest: p(
+    "progulki/IMG_5228.jpg",
+    619,
+    869,
+    "Девушка верхом на белой лошади на лесной тропе",
+  ),
 } satisfies Record<string, Photo>;

@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { animate, motion, useReducedMotion } from "motion/react";
+import {
+  animate,
+  motion,
+  useInView,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import { ArrowRight, Check, Gift } from "@phosphor-icons/react";
 import {
   addons,
@@ -18,10 +25,11 @@ import {
 } from "@/lib/wedding";
 import { useBooking } from "@/components/site/booking-provider";
 import { Reveal } from "@/components/ui/motion";
+import { Magnetic } from "@/components/ui/magnetic";
 
 const rub = (n: number) => n.toLocaleString("ru-RU");
 
-// Число плавно докручивается до нового значения
+// Число плавно докручивается до нового значения (цены дней в списке)
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const prev = useRef(value);
@@ -49,6 +57,52 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   );
 }
 
+// Одна цифра «одометра»: столбик 0–9 едет по пружине (useSpring) к нужной цифре,
+// поэтому при смене суммы цифры перекатываются через промежуточные
+function RollingDigit({ digit }: { digit: number }) {
+  const reduce = useReducedMotion();
+  const v = useSpring(digit, { stiffness: 170, damping: 22, mass: 0.9 });
+  useEffect(() => {
+    if (reduce) v.jump(digit);
+    else v.set(digit);
+  }, [digit, reduce, v]);
+  const y = useTransform(v, (n) => `${-n * 10}%`);
+  return (
+    <span className="relative inline-block h-[1.1em] overflow-hidden align-top">
+      <motion.span className="flex flex-col" style={{ y }}>
+        {Array.from({ length: 10 }, (_, n) => (
+          <span key={n} className="block h-[1.1em] leading-[1.1em]">
+            {n}
+          </span>
+        ))}
+      </motion.span>
+    </span>
+  );
+}
+
+// Сумма целиком. Разряды считаем справа, чтобы при появлении нового разряда
+// остальные цифры не «переезжали» на соседние столбики
+function RollingNumber({ value }: { value: number }) {
+  const chars = Array.from(rub(value));
+  return (
+    <span className="inline-flex tabular-nums">
+      <span className="sr-only">{rub(value)}</span>
+      <span aria-hidden className="inline-flex">
+        {chars.map((ch, i) => {
+          const fromRight = chars.length - i;
+          return /\d/.test(ch) ? (
+            <RollingDigit key={`d${fromRight}`} digit={Number(ch)} />
+          ) : (
+            <span key={`s${fromRight}`} className="inline-block h-[1.1em] w-[0.28em] leading-[1.1em]">
+              {" "}
+            </span>
+          );
+        })}
+      </span>
+    </span>
+  );
+}
+
 function Toggle({
   checked,
   onChange,
@@ -70,9 +124,9 @@ function Toggle({
     >
       <span className="grid gap-0.5">
         <span className="text-[0.98rem] text-linen">{title}</span>
-        <span className="text-[0.82rem] text-linen/70">
+        <span className="text-[0.82rem] text-linen/75">
           {price}
-          {note && <span className="text-linen/45"> · {note}</span>}
+          {note && <span className="text-linen/60"> · {note}</span>}
         </span>
       </span>
       <span className="relative mt-0.5 shrink-0">
@@ -87,6 +141,25 @@ function Toggle({
         <span className="absolute left-1 top-1 size-5 rounded-full bg-linen/70 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] peer-checked:translate-x-5 peer-checked:bg-forest-deep" />
       </span>
     </label>
+  );
+}
+
+// Итоговая карточка: по рамке бежит янтарный луч (.beam в globals.css: conic-gradient,
+// маска оставляет только полоску рамки, крутится transform). Вне экрана луч стоит.
+function BeamCard({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.1 });
+  return (
+    <div
+      ref={ref}
+      // Пока карточка в экране, нижняя панель прячется: у карточки своя кнопка, и панель
+      // не должна закрывать итог (mobile-dock.tsx)
+      data-dock-hide
+      className="relative rounded-[20px] bg-forest-deep shadow-[0_40px_80px_-30px_rgb(20_28_23/0.8)]"
+    >
+      <span aria-hidden className="beam" data-paused={inView ? undefined : ""} />
+      <div className="relative p-6 md:p-8">{children}</div>
+    </div>
   );
 }
 
@@ -121,31 +194,47 @@ export function Pricing() {
     ].filter(Boolean);
     const sum =
       totalMin === totalMax ? `${rub(totalMin)} руб` : `${rub(totalMin)}-${rub(totalMax)} руб`;
-    openBooking({ guests, note: `${parts.join(", ")}. Примерный бюджет: ${sum}` });
+    openBooking({
+      guests,
+      note: `${parts.join(", ")}. Примерный бюджет: ${sum}`,
+      details: [dayLabel, seasonLabel, `${guests} гостей`, `≈ ${sum}`],
+    });
   }
 
   return (
     <section
       id="stoimost"
       aria-labelledby="price-title"
-      className="bg-forest-deep pb-28 pt-4 text-linen md:pb-40"
+      // overflow-clip, а не hidden: hidden делает секцию контейнером прокрутки, и калькулятор
+      // внутри перестаёт прилипать (sticky)
+      className="relative overflow-clip bg-saddle py-24 text-linen md:py-36"
     >
-      <div className="mx-auto grid max-w-[1400px] gap-16 px-5 md:px-8 lg:grid-cols-12 lg:gap-10">
-        {/* Площадка */}
+      {/* «Строчка седла» у верхнего и нижнего края */}
+      <span aria-hidden className="stitch absolute inset-x-3 top-3 text-linen md:inset-x-5 md:top-5" />
+      <span aria-hidden className="stitch absolute inset-x-3 bottom-3 text-linen md:inset-x-5 md:bottom-5" />
+      {/* Мягкий свет сверху слева, как блик на коже */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_55%_at_15%_0%,rgb(246_217_184/0.18),transparent_70%),radial-gradient(60%_60%_at_100%_100%,rgb(20_28_23/0.35),transparent_70%)]"
+      />
+
+      <div className="relative mx-auto grid max-w-[1400px] gap-12 px-4 md:px-8 lg:grid-cols-12 lg:gap-x-10 lg:gap-y-14">
+        {/* Площадка: сезон и день недели */}
         <div className="lg:col-span-7">
           <Reveal>
-            <p className="mb-4 text-[0.75rem] font-medium uppercase tracking-[0.2em] text-brass">
-              Стоимость
-            </p>
-            <h2 id="price-title" className="display text-[2.6rem] leading-[1.03] md:text-[4rem]">
-              Площадка на весь день
+            <p className="eyebrow text-linen">Стоимость</p>
+            <h2
+              id="price-title"
+              className="display mt-5 text-[2.9rem] leading-[0.98] md:text-[4.8rem] lg:text-[5.6rem]"
+            >
+              Площадка <em className="text-dawn">для свадьбы</em>
             </h2>
           </Reveal>
 
           <div
             role="radiogroup"
             aria-label="Месяц"
-            className="mt-10 inline-flex rounded-full border border-linen/15 p-1"
+            className="mt-10 inline-flex rounded-full border border-linen/25 bg-forest-deep/20 p-1"
           >
             {seasons.map((s) => (
               <button
@@ -155,13 +244,13 @@ export function Pricing() {
                 aria-checked={season === s.key}
                 onClick={() => setSeason(s.key)}
                 className={`relative rounded-full px-5 py-2.5 text-[0.9rem] transition-colors ${
-                  season === s.key ? "text-forest-deep" : "text-linen/70 hover:text-linen"
+                  season === s.key ? "text-forest-deep" : "text-linen/85 hover:text-linen"
                 }`}
               >
                 {season === s.key && (
                   <motion.span
                     layoutId="season-pill"
-                    className="absolute inset-0 rounded-full bg-brass"
+                    className="absolute inset-0 rounded-full bg-linen"
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 )}
@@ -173,7 +262,7 @@ export function Pricing() {
             ))}
           </div>
 
-          <div role="radiogroup" aria-label="День недели" className="mt-6 grid">
+          <div role="radiogroup" aria-label="День недели" className="mt-6 grid border-t border-linen/20">
             {venueDays.map((d) => {
               const active = day === d.key;
               const price = venuePrice(d.key, season);
@@ -184,50 +273,148 @@ export function Pricing() {
                   role="radio"
                   aria-checked={active}
                   onClick={() => setDay(d.key)}
-                  className="group relative flex items-baseline justify-between gap-4 border-b border-linen/10 px-1 py-5 text-left md:py-6"
+                  className="group relative flex items-baseline justify-between gap-4 border-b border-linen/20 px-3 py-5 text-left md:px-5 md:py-6"
                 >
                   {active && (
                     <motion.span
                       layoutId="day-marker"
-                      className="absolute -left-3 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-full bg-brass md:-left-5"
+                      aria-hidden
+                      className="absolute inset-0 rounded-[14px] bg-forest-deep/25 ring-1 ring-inset ring-linen/15"
                       transition={{ type: "spring", stiffness: 380, damping: 32 }}
                     />
                   )}
                   <span
-                    className={`text-[1.05rem] transition-colors md:text-[1.2rem] ${
-                      active ? "text-linen" : "text-linen/70 group-hover:text-linen"
+                    className={`relative text-[1.05rem] transition-colors md:text-[1.2rem] ${
+                      active ? "text-linen" : "text-linen/80 group-hover:text-linen"
                     }`}
                   >
                     {d.label}
                   </span>
-                  <span className="flex items-baseline gap-3">
+                  <span className="relative flex items-baseline gap-3">
                     {season === "october" && (
-                      <span className="text-sm text-linen/40 line-through tabular-nums">
+                      <span className="text-[0.95rem] text-linen/90 line-through decoration-linen/70 tabular-nums">
                         {rub(d.price)}
                       </span>
                     )}
                     <span
-                      className={`display text-[2rem] leading-none transition-colors md:text-[2.6rem] ${
-                        active ? "text-brass" : "text-linen"
+                      className={`text-[1.9rem] font-light leading-none tracking-[-0.03em] md:text-[2.5rem] ${
+                        active ? "text-linen" : "text-linen/85"
                       }`}
                     >
                       <AnimatedNumber value={price} />
-                      <span className="ml-1.5 font-sans text-[0.9rem] text-linen/70">руб</span>
+                      <span className="ml-1.5 text-[0.9rem] font-normal tracking-normal text-linen/75">руб</span>
                     </span>
                   </span>
                 </button>
               );
             })}
           </div>
+          <p className="mt-4 text-[0.95rem] text-linen/95">
+            Цены площадки — с июня по сентябрь, в октябре скидка 10%.
+          </p>
+        </div>
 
-          <div className="mt-14 grid gap-10 md:grid-cols-2">
+        {/* Калькулятор: на телефоне сразу после дней недели, на десктопе — справа, прилипает */}
+        <div className="lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:row-start-1">
+          {/* Прилипает, только если карточка (~780px) целиком помещается под шапкой, иначе
+              кнопка внизу была бы недоступна, пока не кончится колонка */}
+          <div className="lg:[@media(min-height:880px)]:sticky lg:[@media(min-height:880px)]:top-24">
+            <BeamCard>
+              <h3 className="display text-[2rem] leading-tight">Примерный бюджет</h3>
+              <p className="mt-1 text-sm text-linen/75">
+                {dayLabel}, {seasonLabel.toLowerCase()}. Площадка{" "}
+                <span className="tabular-nums text-linen">{rub(venue)} руб</span>
+              </p>
+
+              <div className="mt-7">
+                <div className="flex items-baseline justify-between">
+                  <label htmlFor="guests" className="text-[0.98rem]">
+                    Гостей
+                  </label>
+                  <span className="text-[2rem] font-light leading-none tabular-nums text-brass">{guests}</span>
+                </div>
+                <input
+                  id="guests"
+                  type="range"
+                  min={GUESTS_MIN}
+                  max={GUESTS_MAX}
+                  step={1}
+                  value={guests}
+                  onChange={(e) => setGuests(Number(e.target.value))}
+                  className="range range-deep mt-3"
+                  style={{ "--fill": `${fill}%` } as React.CSSProperties}
+                />
+                <div className="flex justify-between text-xs text-linen/65">
+                  <span>{GUESTS_MIN}</span>
+                  <span>{GUESTS_MAX}</span>
+                </div>
+              </div>
+
+              <div className="mt-5 border-t border-linen/10">
+                <Toggle
+                  checked={withProgram}
+                  onChange={setWithProgram}
+                  title={addons.program.title}
+                  price={`${addons.program.pricePerGuest} руб с гостя`}
+                  note="всадники, лассо, экипаж"
+                />
+                <Toggle
+                  checked={withDecor}
+                  onChange={setWithDecor}
+                  title={addons.decor.title}
+                  price={`${rub(addons.decor.price)} руб`}
+                  note="арка, зал, кенди-бар"
+                />
+                <Toggle
+                  checked={withBanquet}
+                  onChange={setWithBanquet}
+                  title={addons.banquet.title}
+                  price={`от ${addons.banquet.pricePerGuestMin} до ${addons.banquet.pricePerGuestMax} руб с гостя`}
+                />
+              </div>
+
+              <div className="mt-4 border-t border-dashed border-brass/35 pt-6">
+                <p className="eyebrow text-brass">Итого примерно, руб</p>
+                <p className="mt-3 text-[2.35rem] font-extralight leading-none tracking-[-0.04em] text-linen min-[400px]:text-[2.6rem] md:text-[3rem]">
+                  {totalMin !== totalMax && (
+                    <span className="mr-2 font-display text-[0.5em] italic tracking-normal text-linen/70">от</span>
+                  )}
+                  <RollingNumber value={totalMin} />
+                  {totalMin !== totalMax && (
+                    <>
+                      <span className="mx-2 font-display text-[0.5em] italic tracking-normal text-linen/70">до</span>
+                      <RollingNumber value={totalMax} />
+                    </>
+                  )}
+                </p>
+                <p className="mt-4 text-[0.8rem] leading-relaxed text-linen/65">
+                  Расчёт по ценам с сайта. {addons.lodging.title} считаем отдельно. Точную сумму
+                  назовём, когда обсудим вашу дату.
+                </p>
+              </div>
+
+              <Magnetic className="mt-6 flex" strength={0.15}>
+                <button type="button" onClick={book} className="btn btn-brass group w-full py-4 text-base">
+                  Узнать, свободна ли дата
+                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                </button>
+              </Magnetic>
+            </BeamCard>
+          </div>
+        </div>
+
+        {/* Что входит и подарки */}
+        <div className="lg:col-span-7">
+          <div className="grid gap-10 md:grid-cols-2">
             {venueIncludes.map((group, gi) => (
               <Reveal key={group.title} delay={gi * 0.1}>
-                <h3 className="text-[0.95rem] font-medium text-linen">Что входит: {group.title.toLowerCase()}</h3>
+                <h3 className="text-[0.95rem] font-semibold text-linen">
+                  Что входит: {group.title.toLowerCase()}
+                </h3>
                 <ul className="mt-4 grid gap-3">
                   {group.items.map((item) => (
-                    <li key={item} className="flex gap-3 text-[0.95rem] leading-snug text-linen/70">
-                      <Check size={16} className="mt-0.5 shrink-0 text-brass" />
+                    <li key={item} className="flex gap-3 text-[0.95rem] leading-snug text-linen/85">
+                      <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-brass-soft" />
                       {item}
                     </li>
                   ))}
@@ -236,103 +423,23 @@ export function Pricing() {
             ))}
           </div>
 
-          <Reveal className="mt-10 grid gap-3 rounded-[20px] border border-brass/40 bg-brass/[0.07] p-5 md:grid-cols-2 md:p-6">
+          <Reveal className="relative mt-10 grid gap-3 rounded-[20px] bg-forest-deep/25 p-5 md:grid-cols-2 md:p-6">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-[5px] rounded-[16px] border border-dashed border-linen/35"
+            />
             {venueGifts.map((g) => (
-              <p key={g} className="flex gap-3 text-[0.98rem] leading-snug text-linen">
-                <Gift size={20} weight="duotone" className="shrink-0 text-brass" />
+              <p key={g} className="relative flex gap-3 text-[0.98rem] leading-snug text-linen">
+                <Gift size={20} weight="duotone" className="shrink-0 text-brass-soft" />
                 <span>
                   {g}
-                  <span className="ml-2 whitespace-nowrap text-[0.78rem] font-medium uppercase tracking-wide text-brass">
+                  <span className="ml-2 whitespace-nowrap text-[0.74rem] font-semibold uppercase tracking-wide text-brass-soft">
                     в подарок
                   </span>
                 </span>
               </p>
             ))}
           </Reveal>
-        </div>
-
-        {/* Калькулятор */}
-        <div className="lg:col-span-5">
-          <div className="rounded-[20px] border border-linen/10 bg-forest p-6 md:p-8 lg:sticky lg:top-24">
-            <h3 className="display text-[2rem] leading-tight">Примерный бюджет</h3>
-            <p className="mt-1 text-sm text-linen/70">
-              {dayLabel}, {seasonLabel.toLowerCase()}. Площадка{" "}
-              <span className="tabular-nums text-linen">{rub(venue)} руб</span>
-            </p>
-
-            <div className="mt-7">
-              <div className="flex items-baseline justify-between">
-                <label htmlFor="guests" className="text-[0.98rem]">
-                  Гостей
-                </label>
-                <span className="display text-[2rem] leading-none tabular-nums text-brass">
-                  {guests}
-                </span>
-              </div>
-              <input
-                id="guests"
-                type="range"
-                min={GUESTS_MIN}
-                max={GUESTS_MAX}
-                step={1}
-                value={guests}
-                onChange={(e) => setGuests(Number(e.target.value))}
-                className="range mt-3"
-                style={{ "--fill": `${fill}%` } as React.CSSProperties}
-              />
-              <div className="flex justify-between text-xs text-linen/45">
-                <span>{GUESTS_MIN}</span>
-                <span>{GUESTS_MAX}</span>
-              </div>
-            </div>
-
-            <div className="mt-5 border-t border-linen/10">
-              <Toggle
-                checked={withProgram}
-                onChange={setWithProgram}
-                title={addons.program.title}
-                price={`${addons.program.pricePerGuest} руб с гостя`}
-                note="всадники, лассо, экипаж"
-              />
-              <Toggle
-                checked={withDecor}
-                onChange={setWithDecor}
-                title={addons.decor.title}
-                price={`${rub(addons.decor.price)} руб`}
-                note="арка, зал, кенди-бар"
-              />
-              <Toggle
-                checked={withBanquet}
-                onChange={setWithBanquet}
-                title={addons.banquet.title}
-                price={`от ${addons.banquet.pricePerGuestMin} до ${addons.banquet.pricePerGuestMax} руб с гостя`}
-              />
-            </div>
-
-            <div className="mt-4 border-t border-linen/10 pt-6">
-              <p className="text-sm text-linen/70">Итого примерно</p>
-              <p className="display mt-1 text-[2.5rem] leading-none text-linen md:text-[2.9rem]">
-                {totalMin !== totalMax && <span className="text-[0.55em] italic text-linen/70">от </span>}
-                <AnimatedNumber value={totalMin} />
-                {totalMin !== totalMax && (
-                  <>
-                    <span className="text-[0.55em] italic text-linen/70"> до </span>
-                    <AnimatedNumber value={totalMax} />
-                  </>
-                )}
-                <span className="ml-2 font-sans text-base text-linen/70">руб</span>
-              </p>
-              <p className="mt-3 text-[0.8rem] leading-relaxed text-linen/50">
-                Расчёт по ценам с сайта. {addons.lodging.title} считаем отдельно. Точную сумму
-                назовём, когда обсудим вашу дату.
-              </p>
-            </div>
-
-            <button type="button" onClick={book} className="btn btn-brass group mt-6 w-full py-4 text-base">
-              Узнать свободную дату
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-            </button>
-          </div>
         </div>
       </div>
     </section>

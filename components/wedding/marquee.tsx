@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   motion,
   useAnimationFrame,
+  useInView,
   useMotionValue,
   useScroll,
   useSpring,
@@ -33,9 +34,16 @@ export function Marquee() {
   const skewX = useTransform(smooth, [-3000, 0, 3000], [7, 0, -7]);
   const x = useTransform(baseX, (v) => `${wrap(-100 / COPIES, 0, v)}%`);
   const direction = useRef(1);
+  // Лента вне экрана не крутится (кадры не тратятся впустую)
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { margin: "100px 0px" });
+  const running = useRef(false);
+  useEffect(() => {
+    running.current = inView;
+  }, [inView]);
 
   useAnimationFrame((_, delta) => {
-    if (reduce) return;
+    if (reduce || !running.current) return;
     const b = boost.get();
     if (b < 0) direction.current = -1;
     else if (b > 0) direction.current = 1;
@@ -57,7 +65,7 @@ export function Marquee() {
   );
 
   return (
-    <section aria-label="Коротко об усадьбе" className="relative z-10 overflow-hidden bg-brass text-forest-deep">
+    <section ref={sectionRef} aria-label="Коротко об усадьбе" className="relative z-10 overflow-hidden bg-brass text-forest-deep">
       <ul className="sr-only">
         {marqueeFacts.map((f) => (
           <li key={f}>{f}</li>

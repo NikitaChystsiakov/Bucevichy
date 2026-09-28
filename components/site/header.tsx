@@ -233,6 +233,7 @@ export function Header() {
 
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const onNav = useNavClick();
+  const reduce = useReducedMotion();
   const pathname = usePathname();
   const { openBooking } = useBooking();
   const ref = useRef<HTMLDivElement>(null);
@@ -258,10 +259,11 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           ref={ref}
           id="mobile-menu"
           className="fixed inset-0 z-[65] flex flex-col bg-forest-deep px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-24 text-linen lg:hidden"
-          initial={{ clipPath: "inset(0 0 100% 0)" }}
-          animate={{ clipPath: "inset(0 0 0% 0)" }}
-          exit={{ clipPath: "inset(0 0 100% 0)" }}
-          transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
+          // При reduced-motion меню просто проявляется, без шторки
+          initial={reduce ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)" }}
+          animate={reduce ? { opacity: 1 } : { clipPath: "inset(0 0 0% 0)" }}
+          exit={reduce ? { opacity: 0 } : { clipPath: "inset(0 0 100% 0)" }}
+          transition={{ duration: reduce ? 0.15 : 0.55, ease: [0.76, 0, 0.24, 1] }}
         >
           <nav aria-label="Мобильное меню" className="flex-1 overflow-y-auto">
             <ul className="grid">

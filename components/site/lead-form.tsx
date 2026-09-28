@@ -1,14 +1,69 @@
 "use client";
 
 import { useId, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowRight, CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { Magnetic } from "@/components/ui/magnetic";
 
 export type LeadPreset = {
   topic?: "date" | "visit";
   guests?: number;
   note?: string;
+  // Что выбрано в калькуляторе (день, месяц, гости, бюджет): показываем чипами над формой
+  // и отправляем вместе с заявкой
+  details?: string[];
 };
+
+// «Взрыв» лепестков после успешной заявки: 22 лепестка разлетаются из галочки и опадают.
+// Разброс детерминированный (по номеру), без Math.random в рендере.
+const PETALS = Array.from({ length: 22 }, (_, i) => {
+  const angle = (i / 22) * Math.PI * 2 + (i % 3) * 0.35;
+  const dist = 90 + ((i * 37) % 70);
+  return {
+    x: Math.cos(angle) * dist,
+    y: Math.sin(angle) * dist * 0.7 - 30,
+    fall: 110 + ((i * 53) % 90),
+    rotate: ((i * 71) % 360) - 180,
+    size: 8 + (i % 4) * 2.5,
+    delay: (i % 5) * 0.03,
+    tone: i % 3,
+  };
+});
+const PETAL_TONES = [
+  "linear-gradient(135deg, #fdf3ec, #e8c2b0)",
+  "linear-gradient(135deg, #f6d9b8, #e8a15c)",
+  "linear-gradient(135deg, #fffaf2, #c9a45c)",
+];
+
+function PetalBurst() {
+  const reduce = useReducedMotion();
+  if (reduce) return null;
+  return (
+    <span aria-hidden className="pointer-events-none absolute left-5 top-8 z-10">
+      {PETALS.map((p, i) => (
+        <motion.span
+          key={i}
+          className="absolute left-0 top-0 block"
+          style={{
+            width: p.size,
+            height: p.size * 1.3,
+            borderRadius: "80% 0 80% 0",
+            background: PETAL_TONES[p.tone],
+          }}
+          initial={{ x: 0, y: 0, rotate: 0, opacity: 0, scale: 0.4 }}
+          animate={{
+            x: [0, p.x, p.x * 1.15],
+            y: [0, p.y, p.y + p.fall],
+            rotate: [0, p.rotate * 0.6, p.rotate],
+            opacity: [0, 1, 0],
+            scale: [0.4, 1, 0.9],
+          }}
+          transition={{ duration: 1.9, delay: p.delay, times: [0, 0.3, 1], ease: "easeOut" }}
+        />
+      ))}
+    </span>
+  );
+}
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -52,11 +107,15 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           key="sent"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-start gap-3 py-4"
+          className="relative flex flex-col items-start gap-3 py-4"
           role="status"
         >
+          <PetalBurst />
           <CheckCircle size={40} weight="light" className="text-brass" />
-          <p className="display text-[1.9rem]">Заявка у нас</p>
+          <p className="eyebrow text-brass">Заявка у нас</p>
+          <p className="display text-[2.2rem] leading-[1.02] md:text-[2.6rem]">
+            До встречи <em className="text-brass">в Буцевичах</em>
+          </p>
           <p className="max-w-[40ch] text-linen/70">
             {isVisit
               ? "Перезвоним и договоримся, когда вам удобно приехать посмотреть усадьбу."
@@ -80,6 +139,22 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           exit={{ opacity: 0 }}
           className="grid gap-4"
         >
+          {preset?.details && preset.details.length > 0 && (
+            <div>
+              <p className={label}>Вы выбрали в калькуляторе</p>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {preset.details.map((d) => (
+                  <li
+                    key={d}
+                    className="rounded-full border border-brass/40 bg-brass/10 px-3 py-1.5 text-[0.82rem] text-linen"
+                  >
+                    {d}
+                  </li>
+                ))}
+              </ul>
+              <input type="hidden" name="details" value={preset.details.join(" · ")} />
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <label htmlFor={`${id}-name`} className={label}>
@@ -168,14 +243,16 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={status === "sending"}
-            className="btn btn-brass mt-1 w-full py-4 text-base disabled:opacity-70"
-          >
-            {status === "sending" ? "Отправляем…" : isVisit ? "Договориться о визите" : "Узнать свободную дату"}
-            {status !== "sending" && <ArrowRight size={18} />}
-          </button>
+          <Magnetic className="mt-1 flex" strength={0.12}>
+            <button
+              type="submit"
+              disabled={status === "sending"}
+              className="btn btn-brass w-full py-4 text-base disabled:opacity-70"
+            >
+              {status === "sending" ? "Отправляем…" : isVisit ? "Договориться о визите" : "Узнать свободную дату"}
+              {status !== "sending" && <ArrowRight size={18} />}
+            </button>
+          </Magnetic>
           <p className="text-center text-xs text-linen/50">
             Нажимая кнопку, вы соглашаетесь на обработку персональных данных
           </p>

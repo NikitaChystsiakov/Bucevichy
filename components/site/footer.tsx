@@ -92,7 +92,7 @@ export function Footer() {
             </nav>
           </div>
 
-          <div className="mx-auto flex max-w-[1440px] flex-col gap-1.5 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] text-xs text-linen/40 md:flex-row md:justify-between md:px-8">
+          <div className="mx-auto flex max-w-[1440px] flex-col gap-1.5 px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] text-xs text-linen/60 md:flex-row md:justify-between md:px-8">
             <span>2009-2026 © Конная усадьба «Буцевичи»</span>
             <span>Александр Дежкунов, УНП АА0967223</span>
           </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import type { Video } from "@/lib/media";
 
 // Видео-«живое фото»: без звука, по кругу, играет только пока видно на экране.
-// preload="none" — до попадания в экран грузится только постер.
+// Ленивое целиком: атрибут poster браузер качает сразу, даже при preload="none", поэтому
+// постер и <source> подключаем, только когда ролик подошёл к экрану (за ~1 экран до него).
 // При prefers-reduced-motion видео не запускается, остаётся постер.
 export function LazyVideo({
   video,
@@ -30,10 +31,28 @@ export function LazyVideo({
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const reduce = useReducedMotion();
+  const [near, setNear] = useState(false);
+
+  // Подключаем постер и источник заранее, пока ролик ещё в экране ниже
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "100% 0px 100% 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !near) return;
     if (reduce || !active) {
       el.pause();
       return;
@@ -55,7 +74,7 @@ export function LazyVideo({
       io.disconnect();
       el.pause();
     };
-  }, [reduce, active]);
+  }, [reduce, active, near]);
 
   return (
     <div
@@ -69,7 +88,7 @@ export function LazyVideo({
       <video
         ref={ref}
         className={`photo-grade absolute inset-0 h-full w-full object-cover ${videoClassName}`}
-        poster={video.poster}
+        poster={near ? video.poster : undefined}
         width={video.width}
         height={video.height}
         muted
@@ -78,7 +97,7 @@ export function LazyVideo({
         preload="none"
         aria-label={video.alt}
       >
-        <source src={video.src} type="video/mp4" />
+        {near && <source src={video.src} type="video/mp4" />}
       </video>
       {shade && (
         <div

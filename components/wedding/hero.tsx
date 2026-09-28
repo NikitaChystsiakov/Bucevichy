@@ -67,8 +67,8 @@ function HeroMedia() {
       src={heroMedia.src}
       alt={heroMedia.alt}
       fill
+      // Единственная картинка страницы с preload: это LCP первого экрана
       preload
-      loading="eager"
       fetchPriority="high"
       sizes="(min-width: 1024px) 40vw, 100vw"
       className="photo-grade object-cover"
@@ -132,9 +132,9 @@ export function Hero() {
             src={heroMedia.src}
             alt=""
             fill
-            // Размытый фон на десктопе — самая большая картинка экрана (LCP), грузим сразу
-            loading="eager"
-            sizes="25vw"
+            // Только на десктопе (на телефоне блок скрыт, и ленивая картинка не качается).
+            // Под сильным blur хватает маленькой версии
+            sizes="(min-width: 1024px) 25vw, 1px"
             className="scale-110 object-cover blur-2xl brightness-[0.42] saturate-[0.85]"
           />
         )}
@@ -186,9 +186,11 @@ export function Hero() {
 
             <SplitTitle />
 
+            {/* Подзаголовок не ждёт шторку и не прозрачный в начале (только подъём, .hero-rise):
+                это самый крупный текст первого экрана, по нему считается LCP. Фото на весь экран
+                Chrome в LCP не учитывает, а буквы заголовка появляются только после шторки */}
             <p
-              style={delay(0.7)}
-              className="hero-fade mt-7 max-w-[34ch] text-[1.02rem] leading-relaxed text-linen/85 lg:mt-9 lg:max-w-[40ch] lg:text-[1.15rem]"
+              className="hero-rise mt-7 max-w-[34ch] text-[1.02rem] leading-relaxed text-linen/85 lg:mt-9 lg:max-w-[40ch] lg:text-[1.15rem]"
             >
               Свадьба в конной усадьбе в 23 км от Минска. Выезд невесты на регистрацию верхом и
               фотосессия с лошадьми для молодых —{" "}

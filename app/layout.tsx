@@ -7,16 +7,18 @@ import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
 import { MobileDock } from "@/components/site/mobile-dock";
 import { Preloader } from "@/components/site/preloader";
+import { Cursor } from "@/components/site/cursor";
 
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin", "cyrillic"],
 });
 
+// Вариативный шрифт (300–700): один файл на начертание вместо восьми статических.
+// Латиницу тоже предзагружаем: в ней пробел и цифры, она нужна с первой отрисовки
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
 });
 
@@ -58,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <MobileDock />
         </BookingProvider>
+        <Cursor />
         <div className="grain" aria-hidden />
       </body>
     </html>

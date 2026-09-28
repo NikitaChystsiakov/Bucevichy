@@ -260,6 +260,17 @@ html[data-preloader] .preloader {
     transform: translateY(18px);
   }
 }
+/* Подзаголовок hero: только подъём, без прозрачности и без паузы на время шторки (см. hero.tsx) */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-rise {
+    animation: hero-rise 1.2s var(--ease-out-soft) both;
+  }
+}
+@keyframes hero-rise {
+  from {
+    transform: translateY(14px);
+  }
+}
 
 /* ---------- Лошадь одной линией: галоп на месте ---------- */
 @media (prefers-reduced-motion: no-preference) {
@@ -461,4 +472,71 @@ html[data-preloader] .preloader {
     transform: scale(3.2);
     opacity: 0;
   }
+}
+
+/* ---------- Pricing: янтарный луч по рамке итоговой карточки ---------- */
+/* Маска оставляет от слоя только полоску рамки (padding), внутри крутится conic-gradient.
+   Анимируется только transform псевдоэлемента. */
+.beam {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: rgb(243 236 224 / 0.1);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+.beam::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 250%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 58%,
+    rgb(232 161 92 / 0) 62%,
+    rgb(232 161 92 / 0.9) 72%,
+    #f6d9b8 75%,
+    rgb(232 161 92 / 0) 79%,
+    transparent 80% 100%
+  );
+}
+@media (prefers-reduced-motion: no-preference) {
+  .beam::before {
+    animation: beam-spin 6s linear infinite;
+  }
+  .beam[data-paused]::before {
+    animation-play-state: paused;
+  }
+}
+@keyframes beam-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Ползунок на самой тёмной подложке (калькулятор) */
+.range-deep::-webkit-slider-thumb {
+  border-color: var(--color-forest-deep);
+}
+.range-deep::-moz-range-thumb {
+  border-color: var(--color-forest-deep);
+}
+
+/* ---------- Кастомный курсор ---------- */
+/* Над элементами с подписью курсора (галерея: «Тяните») системный курсор прячем —
+   его заменяет латунный круг с подписью. Класс ставит components/site/cursor.tsx */
+html.has-cursor [data-cursor-label],
+html.has-cursor [data-cursor-label] * {
+  cursor: none;
 }

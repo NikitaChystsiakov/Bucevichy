@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     phone,
     date: body.date,
     guests: body.guests,
+    details: body.details,
     note: body.note,
   });
 

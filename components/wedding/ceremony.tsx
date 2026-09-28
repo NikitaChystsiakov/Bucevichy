@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { motion, useMotionValue, useScroll, useTransform, type MotionValue } from "motion/react";
+import { motion, useInView, useMotionValue, useScroll, useTransform, type MotionValue } from "motion/react";
 import { ceremony } from "@/lib/wedding";
 import { instaPhotos, videos } from "@/lib/media";
 import { LazyVideo } from "@/components/ui/lazy-video";
@@ -53,11 +53,17 @@ const PETALS = [
 ];
 
 function Petals({ opacity }: { opacity: MotionValue<number> }) {
+  // CSS-анимация лепестков стоит на паузе, пока сцена вне экрана
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref);
   return (
     <motion.div
+      ref={ref}
       aria-hidden
       style={{ opacity }}
-      className="pointer-events-none absolute inset-0 z-20 overflow-hidden max-md:[&>*:nth-child(2n)]:hidden"
+      className={`pointer-events-none absolute inset-0 z-20 overflow-hidden max-md:[&>*:nth-child(2n)]:hidden ${
+        inView ? "" : "[&>.petal]:[animation-play-state:paused]"
+      }`}
     >
       {PETALS.map((p) => (
         <span

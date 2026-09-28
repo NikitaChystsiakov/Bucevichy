@@ -13,6 +13,8 @@ import { Hall } from "@/components/wedding/hall";
 import { EstateMap } from "@/components/wedding/estate-map";
 import { Stay } from "@/components/wedding/stay";
 import { Pricing } from "@/components/wedding/pricing";
+import { Gallery } from "@/components/wedding/gallery";
+import { Film } from "@/components/wedding/film";
 import { Reviews } from "@/components/wedding/reviews";
 import { Faq } from "@/components/wedding/faq";
 import { FinalCta } from "@/components/wedding/final-cta";
@@ -111,6 +113,8 @@ export default function WeddingPage() {
       <EstateMap />
       <Stay />
       <Pricing />
+      <Gallery />
+      <Film />
       <Reviews />
       <Faq />
       <FinalCta />

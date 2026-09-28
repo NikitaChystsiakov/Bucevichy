@@ -3,7 +3,7 @@
 // TODO(медиа): запросить у клиента оригиналы в хорошем качестве. Часть кадров и фильм сняли
 // сторонние авторы (pavel__gorbach, viki.cherniki, grek_vi и др.) — для боевого сайта нужно их разрешение.
 
-import type { Photo } from "./photos";
+import { photos, type Photo } from "./photos";
 
 export type Video = {
   kind: "video";
@@ -77,3 +77,30 @@ export type HeroMedia = ({ kind: "photo" } & Photo) | Video;
 
 // Первый экран. Чтобы поставить видео, замените строку, например: `= videos.eveningGazebo;`
 export const heroMedia: HeroMedia = { kind: "photo", ...instaPhotos.coupleFog };
+
+// Галерея: лучшие кадры в порядке свадебного дня (утро → ночь). Подписи — только то, что в кадре.
+// Фото 22 (hero) и 20 (финальный экран) не повторяем. Кадры 19 и 12 — постеры роликов.
+// TODO(фото): настоящих свадебных фото мало, часть кадров — прогулки и корпоративы; запросить у клиента.
+// crop — классы для картинки, если кадр надо подрезать (остатки стикеров Instagram)
+export type GalleryItem = Photo & { caption: string; crop?: string };
+
+const g = (photo: Photo, caption: string, crop?: string): GalleryItem => ({ ...photo, caption, crop });
+
+export const gallery: GalleryItem[] = [
+  // Вверху кадра белый стикер из Instagram — увеличиваем от нижнего края, как в «Почему здесь»
+  g(instaPhotos.ceremonyMeadow, "Луг с аркой и тюками сена", "origin-bottom scale-[1.2]"),
+  g(instaPhotos.ringsHorseshoes, "Кольца на подковах"),
+  g(photos.riderPaint, "Верхом в леваде"),
+  g(photos.ridersPair, "Вдвоём к лесу"),
+  g(photos.girlWithHorse, "Золотой час"),
+  g(instaPhotos.fourchetteTable, "Фуршет под навесом"),
+  g(photos.hallSun, "Зал 170 м² с окнами в пол"),
+  g(instaPhotos.hallTable, "Стол в зелени, буквы LOVE"),
+  g(photos.ridersWelcome, "Всадники встречают гостей"),
+  g(photos.whiteHorseForest, "Лесная тропа"),
+  g(photos.horseMuzzle, "В конюшне"),
+  g(posterPhoto(videos.firstDance), "Первый танец"),
+  g(photos.chaletEvening, "Вечер в гирляндах"),
+  g(instaPhotos.nightGazeboSign, "Беседка ночью"),
+  g(posterPhoto(videos.nightBonfire), "Костёр и LOVE"),
+];

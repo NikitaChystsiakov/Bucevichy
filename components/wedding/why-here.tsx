@@ -14,7 +14,8 @@ import { instaPhotos, videos, type Video } from "@/lib/media";
 import { LazyVideo } from "@/components/ui/lazy-video";
 import { useBooking } from "@/components/site/booking-provider";
 import { Reveal } from "@/components/ui/motion";
-import { useReducedMotionSafe, useScrollTransform } from "@/components/ui/hooks";
+import { Magnetic } from "@/components/ui/magnetic";
+import { useNear, useReducedMotionSafe, useScrollTransform } from "@/components/ui/hooks";
 
 type Key = (typeof whyHere)[number]["key"];
 
@@ -57,6 +58,10 @@ function Card({
   const start = index / total;
   const scale = useScrollTransform(progress, [start, 1], [1, 1 - under * 0.05]);
   const dim = useScrollTransform(progress, [start, 1], [0, under * 0.2]);
+  // Блок сразу под первым экраном: фото подключаем, когда карточка в полутора экранах,
+  // чтобы на телефоне они не отнимали канал у hero
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const near = useNear(mediaRef);
 
   return (
     <div className="sticky top-0 flex h-[100svh] items-center justify-center px-3 md:px-8">
@@ -67,11 +72,11 @@ function Card({
         }}
         className={`relative flex h-[min(80svh,700px)] w-full max-w-[1280px] origin-top flex-col overflow-hidden rounded-[20px] shadow-[0_-20px_60px_-20px_rgb(0_0_0/0.55)] md:grid md:grid-cols-2 ${tones[index]}`}
       >
-        <div className="relative h-[50%] shrink-0 md:order-2 md:h-full">
+        <div ref={mediaRef} className="relative h-[50%] shrink-0 bg-forest md:order-2 md:h-full">
           {"video" in media ? (
             <LazyVideo video={media.video} cap={false} ratio={false} className="absolute inset-0" />
           ) : (
-            <Image
+            near && <Image
               src={media.photo.src}
               alt={media.photo.alt}
               fill
@@ -136,17 +141,19 @@ export function WhyHere() {
         </Reveal>
         <Reveal delay={0.15} className="self-end lg:col-span-4 lg:col-start-9">
           <p className="text-[1.05rem] leading-relaxed text-linen/75">{MOOD}</p>
-          <button
-            type="button"
-            onClick={() => openBooking({ topic: "visit" })}
-            className="btn btn-outline group mt-7 text-linen"
-          >
-            Приехать посмотреть
-            <ArrowUpRight
-              size={17}
-              className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-            />
-          </button>
+          <Magnetic className="mt-7 inline-flex">
+            <button
+              type="button"
+              onClick={() => openBooking({ topic: "visit" })}
+              className="btn btn-outline group text-linen"
+            >
+              Приехать посмотреть
+              <ArrowUpRight
+                size={17}
+                className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </button>
+          </Magnetic>
         </Reveal>
       </div>
 
