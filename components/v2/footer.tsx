@@ -14,7 +14,7 @@ export function Footer() {
           Отдых в седле — отдых <span className="script whitespace-nowrap text-[1.2em] text-terra-deep">с душой!</span>
         </p>
 
-        <div className="mt-10 grid gap-8 border-t border-dashed border-ink/20 pt-8 md:grid-cols-[1fr_1fr_1.3fr] md:gap-10 md:pt-10">
+        <div className="mt-10 grid gap-8 border-t border-dashed border-ink/20 pt-8 md:grid-cols-2 md:gap-10 md:pt-10 lg:grid-cols-[1fr_1fr_1.3fr]">
           <div className="grid content-start gap-3">
             <WordmarkV2 />
             <p className="mt-2 max-w-[32ch] text-[0.92rem] leading-relaxed text-ink-soft">{contacts.address}</p>
@@ -22,7 +22,10 @@ export function Footer() {
 
           <div className="grid content-start gap-2 text-[0.95rem]">
             <p className="v2-eyebrow text-ink-soft">Всё по предварительной записи</p>
-            <a href={contacts.phoneMain.href} className="prata mt-1 w-fit text-[1.45rem] tabular-nums hover:text-terra-deep">
+            <a
+              href={contacts.phoneMain.href}
+              className="prata mt-1 w-fit whitespace-nowrap text-[1.45rem] tabular-nums hover:text-terra-deep"
+            >
               {contacts.phoneMain.display}
             </a>
             <a href={contacts.phoneSecond.href} className="w-fit tabular-nums hover:text-terra-deep">
@@ -57,8 +60,8 @@ export function Footer() {
             </div>
           </div>
 
-          {/* На телефоне разделы есть в меню: футер остаётся коротким */}
-          <nav aria-label="Разделы сайта в подвале" className="max-md:hidden">
+          {/* На телефоне и планшете разделы есть в меню: футер остаётся коротким */}
+          <nav aria-label="Разделы сайта в подвале" className="max-lg:hidden">
             <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] text-ink-soft">
               {v2Links.map((l) => (
                 <li key={l.label}>

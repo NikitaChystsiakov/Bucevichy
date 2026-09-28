@@ -34,7 +34,8 @@ export function IntroEnvelope() {
         {/* Задняя стенка конверта */}
         <div className="absolute inset-0 bg-terra-soft shadow-[0_30px_60px_-30px_rgb(46_42_36/0.45)]" />
         {/* Открытка внутри */}
-        <div className="v2-env-card absolute inset-x-[7%] bottom-[6%] top-[8%] z-[1] flex flex-col items-center justify-center gap-2 bg-paper text-ink">
+        {/* Надпись — в верхней части открытки: пока конверт закрыт, её прячет клапан, а не карман */}
+        <div className="v2-env-card absolute inset-x-[7%] bottom-[6%] top-[8%] z-[1] flex flex-col items-center justify-start gap-1.5 bg-paper pt-[7%] text-ink">
           <div className="invite-frame absolute inset-[6%] text-terra [--corner:18px]" />
           <Horseshoe size={22} className="text-terra" />
           <span className="prata text-[1.35rem]">Буцевичи</span>

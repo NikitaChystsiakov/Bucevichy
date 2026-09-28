@@ -11,12 +11,15 @@ export function DemoLink({
   className,
   children,
   onNavigate,
+  current,
 }: {
   link: NavLink;
   className?: string;
   children?: React.ReactNode;
   // Вызывается при переходе (например, закрыть меню)
   onNavigate?: () => void;
+  // Текущая страница: aria-current="page"
+  current?: boolean;
 }) {
   const { showToast } = useBooking();
   const target = navTarget(link);
@@ -33,6 +36,7 @@ export function DemoLink({
   return (
     <Link
       href={target.href}
+      aria-current={current ? "page" : undefined}
       // Раздела ещё нет — не запрашиваем его заранее (иначе 404 в консоли)
       prefetch={link.ready ? undefined : false}
       className={className}

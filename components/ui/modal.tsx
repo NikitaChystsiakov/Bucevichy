@@ -8,8 +8,11 @@ import { useFocusTrap } from "./hooks";
 
 const noop = () => () => {};
 
-// Полноэкранное окно поверх страницы: лайтбокс галереи, фильм. Портал в body — страница лежит
-// в обёртке с z-10 (sticky reveal футера), и изнутри неё окно оказалось бы под шапкой.
+// Полноэкранное окно поверх страницы: лайтбокс галереи, фильм. Портал вне страницы — она лежит
+// в обёртке с z-10 (sticky reveal футера), и изнутри неё окно оказалось бы под шапкой. Цель —
+// обёртка шрифтов v1 (data-portal-root, display: contents, в app/(v1)/layout.tsx): на ней переменные
+// шрифтов; без неё — body.
+const portalRoot = () => document.querySelector<HTMLElement>("[data-portal-root]") ?? document.body;
 // Esc и клик по фону закрывают, фокус заперт внутри и возвращается, скролл страницы заблокирован.
 export function Modal({
   open,
@@ -36,7 +39,7 @@ export function Modal({
         </ModalBody>
       )}
     </AnimatePresence>,
-    document.body,
+    portalRoot(),
   );
 }
 

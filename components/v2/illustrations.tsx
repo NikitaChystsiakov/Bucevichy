@@ -15,11 +15,13 @@ const EASE = [0.65, 0, 0.35, 1] as const;
 type DrawCtx = { duration: number; reduce: boolean };
 const DrawContext = createContext<DrawCtx>({ duration: 1.1, reduce: false });
 
+// opacity штриха (вспомогательные линии: земля, сучки, соломинки) — целевое значение анимации:
+// атрибут opacity не сработал бы, его перебивает инлайн-стиль motion
 const lineVariants: Variants = {
   hidden: { pathLength: 0, opacity: 0 },
-  visible: ({ duration, reduce }: DrawCtx) => ({
+  visible: ({ duration, reduce, opacity = 1 }: DrawCtx & { opacity?: number }) => ({
     pathLength: 1,
-    opacity: 1,
+    opacity,
     transition: reduce
       ? { duration: 0 }
       : { pathLength: { duration, ease: EASE }, opacity: { duration: 0.05 } },
@@ -28,14 +30,18 @@ const lineVariants: Variants = {
 
 // Штрихи. Анимируется только stroke (pathLength) и прозрачность.
 type PathProps = Omit<React.SVGProps<SVGPathElement>, "ref" | keyof React.DOMAttributes<SVGPathElement>>;
-export function P(props: PathProps) {
+export function P({ opacity, ...props }: PathProps) {
   const ctx = useContext(DrawContext);
-  return <motion.path {...(props as object)} custom={ctx} variants={lineVariants} />;
+  return (
+    <motion.path {...(props as object)} custom={{ ...ctx, opacity: opacity == null ? 1 : Number(opacity) }} variants={lineVariants} />
+  );
 }
 type CircleProps = Omit<React.SVGProps<SVGCircleElement>, "ref" | keyof React.DOMAttributes<SVGCircleElement>>;
-export function C(props: CircleProps) {
+export function C({ opacity, ...props }: CircleProps) {
   const ctx = useContext(DrawContext);
-  return <motion.circle {...(props as object)} custom={ctx} variants={lineVariants} />;
+  return (
+    <motion.circle {...(props as object)} custom={{ ...ctx, opacity: opacity == null ? 1 : Number(opacity) }} variants={lineVariants} />
+  );
 }
 
 // Интро-конверт (intro.tsx) держит флаг на <html> ~1,2 с: рисунки первого экрана ждут, пока он откроется
@@ -209,7 +215,20 @@ export function HayBaleIll({ className, strokeWidth, delay, afterIntro, label }:
 }
 
 /* ---------------- Зал с окнами в пол ---------------- */
-export function HallIll({ className, strokeWidth, delay, afterIntro, label }: IllProps) {
+// compact — для иконок ~40px: три окна без фрамуг, иначе переплёты сливаются в кашу
+export function HallIll({ className, strokeWidth, delay, afterIntro, label, compact = false }: IllProps & { compact?: boolean }) {
+  if (compact) {
+    return (
+      <DrawOnView viewBox="14 10 172 104" {...{ className, strokeWidth, delay, afterIntro, label }}>
+        <P d="M16 56L100 18L184 56" />
+        <P d="M30 50V108M170 50V108" />
+        {[46, 88, 130].map((x) => (
+          <P key={x} d={`M${x} 108V66H${x + 24}V108M${x + 12} 66V108`} />
+        ))}
+        <P d="M16 108H184" />
+      </DrawOnView>
+    );
+  }
   const windows = [34, 62, 90, 118, 146];
   return (
     <DrawOnView viewBox="0 6 200 110" {...{ className, strokeWidth, delay, afterIntro, label }}>
@@ -313,9 +332,10 @@ export function GarlandParts() {
   );
 }
 
-export function GarlandIll({ className, strokeWidth, delay, afterIntro, label }: IllProps) {
+// compact — для иконок: середина гирлянды крупнее
+export function GarlandIll({ className, strokeWidth, delay, afterIntro, label, compact = false }: IllProps & { compact?: boolean }) {
   return (
-    <DrawOnView viewBox="0 4 200 60" {...{ className, strokeWidth, delay, afterIntro, label }}>
+    <DrawOnView viewBox={compact ? "36 14 128 48" : "0 4 200 60"} {...{ className, strokeWidth, delay, afterIntro, label }}>
       <GarlandParts />
     </DrawOnView>
   );
@@ -385,15 +405,17 @@ export function CameraIll({ className, strokeWidth, delay, afterIntro, label }: 
 
 export function HeroScene({ className, delay, afterIntro, label }: IllProps) {
   return (
-    <DrawOnView viewBox="0 0 400 200" stagger={0.05} {...{ className, delay, afterIntro, label }}>
+    // ~35 штрихов: сдвиг 0,025 с, чтобы вся сцена рисовалась за ~2 с (арка → тюк → лошадь)
+    <DrawOnView viewBox="0 0 400 200" stagger={0.025} {...{ className, delay, afterIntro, label }}>
       <g transform="translate(60 10)">
         <ArchParts />
       </g>
       {/* Тюк сена слева от арки (два тюка друг на друге пересекались линиями) */}
-      <g transform="translate(6 141.3) scale(0.55)">
+      {/* strokeWidth компенсирует масштаб группы: линии той же толщины, что у арки */}
+      <g transform="translate(6 141.3) scale(0.55)" strokeWidth={1.5 / 0.55}>
         <HayParts />
       </g>
-      <g transform="translate(393 59.6) scale(-0.85 0.85)">
+      <g transform="translate(393 59.6) scale(-0.85 0.85)" strokeWidth={1.5 / 0.85}>
         <HorseParts />
       </g>
       <P d="M2 182H398" opacity={0.6} />

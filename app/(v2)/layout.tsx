@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 };
 
 // Вторая версия страницы свадеб (/svadby-2): светлая, «приглашение».
-// Своя заявка в стиле v2: вложенный BookingProvider перекрывает корневой (стиль v1).
+// Своя заявка в стиле v2 (та же логика, что в v1, оформление — variant="v2").
 export default function V2Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`v2 ${prata.variable} ${marck.variable} ${commissioner.variable}`}>

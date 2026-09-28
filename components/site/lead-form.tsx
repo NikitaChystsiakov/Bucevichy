@@ -94,7 +94,7 @@ const styles = {
   },
   v2: {
     field:
-      "w-full rounded-[12px] border border-ink/20 bg-paper-2/60 px-4 py-3.5 text-[16px] text-ink outline-none transition placeholder:text-ink-soft/80 focus:border-terra-deep focus:bg-paper",
+      "w-full rounded-[12px] border border-ink/35 bg-paper-2/60 px-4 py-3.5 text-[16px] text-ink outline-none transition placeholder:text-ink-soft/80 focus:border-terra-deep focus:bg-paper",
     label: "text-[0.8rem] font-medium text-ink-soft",
     fieldError: "border-terra-deep",
     error: "text-terra-deep",

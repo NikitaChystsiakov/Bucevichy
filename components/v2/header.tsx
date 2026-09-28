@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { List, Phone, X } from "@phosphor-icons/react";
 import { contacts } from "@/lib/site";
 import { useFocusTrap, useReducedMotionSafe } from "@/components/ui/hooks";
@@ -13,19 +13,25 @@ import { v2Links, WordmarkV2 } from "./brand";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+// Страница прокручена хоть немного: подложка шапки видна. Читается и при загрузке посреди страницы
+const subscribeScroll = (cb: () => void) => {
+  window.addEventListener("scroll", cb, { passive: true });
+  return () => window.removeEventListener("scroll", cb);
+};
+const isScrolled = () => window.scrollY > 8;
+
 export function Header() {
-  const { scrollY } = useScroll();
   const { openBooking } = useBooking();
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = useSyncExternalStore(subscribeScroll, isScrolled, () => false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useMotionValueEvent(scrollY, "change", (y) => {
-    const next = y > 8;
-    if (next !== scrolled) setScrolled(next);
-  });
-
+  // Пока меню открыто: страница не скроллится, а её содержимое недоступно с клавиатуры (inert) —
+  // иначе Tab уходил бы на кнопки под непрозрачным меню. Шапка с кнопкой «Закрыть» остаётся доступной
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
+    const behind = document.querySelectorAll<HTMLElement>("#top, #kontakty");
+    behind.forEach((el) => (el.inert = menuOpen));
+    return () => behind.forEach((el) => (el.inert = false));
   }, [menuOpen]);
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -129,6 +135,7 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
                       <DemoLink
                         link={link}
                         onNavigate={onClose}
+                        current={!!active}
                         className={`flex items-baseline justify-between gap-4 py-3 transition hover:text-terra-deep ${
                           active ? "text-terra-deep" : ""
                         }`}

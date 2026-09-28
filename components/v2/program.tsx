@@ -7,14 +7,17 @@ import { Reveal } from "@/components/ui/motion";
 import { useReducedMotionSafe } from "@/components/ui/hooks";
 import { ArchIll, CameraIll, GarlandIll, GlassesIll, HallIll, HorseshoeIll } from "./illustrations";
 
+const CompactHall = (p: Parameters<typeof HallIll>[0]) => <HallIll {...p} compact />;
+const CompactGarland = (p: Parameters<typeof GarlandIll>[0]) => <GarlandIll {...p} compact />;
+
 // Иконки маленькие, поэтому линия толще в единицах viewBox — на экране она ~1,5 px
 const icons: Record<ProgramKey, { Art: typeof ArchIll; stroke: number }> = {
   welcome: { Art: GlassesIll, stroke: 2.4 },
   ride: { Art: HorseshoeIll, stroke: 2.4 },
   ceremony: { Art: ArchIll, stroke: 4.6 },
   photo: { Art: CameraIll, stroke: 2.4 },
-  banquet: { Art: HallIll, stroke: 5.4 },
-  evening: { Art: GarlandIll, stroke: 5 },
+  banquet: { Art: CompactHall, stroke: 5 },
+  evening: { Art: CompactGarland, stroke: 3.6 },
 };
 
 // «Программа дня» — как программа в свадебном приглашении: без времени, с пометкой «примерный сценарий».
@@ -51,17 +54,17 @@ export function Program() {
                   <span className="relative grid size-14 shrink-0 place-items-center rounded-full border border-terra/45 bg-paper text-ink md:size-16">
                     <Art className="size-9 md:size-10" strokeWidth={stroke} delay={0.2 + i * 0.12} />
                   </span>
-                  <span className="grid gap-1 pt-1.5 md:pt-2">
-                    <span className="flex flex-wrap items-baseline gap-x-3">
-                      <span className="prata text-[1.2rem] leading-snug md:text-[1.45rem]">{step.title}</span>
+                  <div className="grid gap-1 pt-1.5 md:pt-2">
+                    <div className="flex flex-wrap items-baseline gap-x-3">
+                      <h3 className="prata text-[1.2rem] leading-snug md:text-[1.45rem]">{step.title}</h3>
                       {step.gift && (
                         <span className="script rounded-full bg-terra-soft px-2.5 text-[1.05rem] leading-snug text-ink">
                           в подарок
                         </span>
                       )}
-                    </span>
-                    <span className="text-[0.95rem] leading-relaxed text-ink-soft">{step.text}</span>
-                  </span>
+                    </div>
+                    <p className="text-[0.95rem] leading-relaxed text-ink-soft">{step.text}</p>
+                  </div>
                 </Reveal>
               );
             })}

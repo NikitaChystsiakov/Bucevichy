@@ -22,7 +22,8 @@ export function WordmarkV2({ className = "" }: { className?: string }) {
       <Horseshoe size={20} className="shrink-0 text-terra" />
       <span className="flex flex-col">
         <span className="prata text-[1.35rem]">Буцевичи</span>
-        <span className="mt-1 text-[0.56rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
+        {/* text-ink: на фактуре paper-2 под прозрачной шапкой ink-soft давал ~4:1 */}
+        <span className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-ink">
           конная усадьба
         </span>
       </span>
