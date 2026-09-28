@@ -21,7 +21,7 @@ export function FinalCta() {
     <section
       id="zapis"
       aria-labelledby="cta-title"
-      className="relative isolate overflow-hidden bg-forest-deep py-24 text-linen md:py-36"
+      className="relative isolate overflow-hidden bg-forest-deep py-16 text-linen md:py-24"
     >
       <div aria-hidden className="absolute inset-y-0 right-0 -z-20 w-full xl:w-[36%]">
         <Image

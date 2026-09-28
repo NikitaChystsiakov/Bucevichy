@@ -23,7 +23,7 @@ export function Faq() {
   const layout = reduce ? false : ("position" as const);
 
   return (
-    <section id="voprosy" aria-labelledby="faq-title" className="bg-linen py-24 text-forest-deep md:py-36">
+    <section id="voprosy" aria-labelledby="faq-title" className="bg-linen py-16 text-forest-deep md:py-24">
       <div className="mx-auto grid max-w-[1400px] gap-12 px-4 md:px-8 lg:grid-cols-12">
         <Reveal className="lg:col-span-4">
           <p className="eyebrow text-saddle">Вопросы</p>

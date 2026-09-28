@@ -7,20 +7,19 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { Clock, Gift } from "@phosphor-icons/react";
-import { photos } from "@/lib/photos";
 import { instaPhotos, videos, type Video } from "@/lib/media";
-import { addons } from "@/lib/wedding";
 import { LazyVideo } from "@/components/ui/lazy-video";
 import { HorseLine } from "@/components/ui/motifs";
 import { useReducedMotionSafe, useScrollTransform } from "@/components/ui/hooks";
 import { Reveal, RevealImage } from "@/components/ui/motion";
 
 /*
-  «Один день в Буцевичах»: скролл = свадебный день.
-  Фон идёт dawn → linen → golden (день), закат golden → night, дальше ночь.
-  Солнце в углу садится по скроллу, на ночной части загорается гирлянда.
-  TODO(время): время моментов придумано для демо, уточнить у клиента типичный тайминг.
+  «Один день в Буцевичах»: пять моментов свадебного дня — утро, регистрация, фотосессия с лошадьми,
+  банкет, ночь. Фон идёт dawn → linen → golden и в конце дня темнеет в ночь; солнце в углу садится
+  по скроллу, на ночной части загорается гирлянда. На десктопе текст и медиа в две колонки.
+  Времени у моментов нет: над таймлайном подпись «Примерный сценарий дня».
+  TODO(время): узнать у клиента типичный тайминг свадьбы.
+  Каждое фото и видео здесь стоит на странице один раз (lib/media.ts).
 */
 
 type Tone = "day" | "night";
@@ -71,24 +70,22 @@ function Trail({
   );
 }
 
-/* ---------- Один момент дня ---------- */
+/* ---------- Один момент дня: текст слева, медиа справа (на телефоне — друг под другом) ---------- */
 
 function Moment({
-  time,
   tone,
   title,
-  tag,
-  children,
+  text,
+  media,
 }: {
-  time: string;
   tone: Tone;
   title: React.ReactNode;
-  tag?: { label: string; gift?: boolean };
-  children: React.ReactNode;
+  text: React.ReactNode;
+  media: React.ReactNode;
 }) {
   const day = tone === "day";
   return (
-    <li className="relative min-w-0 pl-[3.75rem] md:pl-28 lg:pl-40">
+    <li className="relative min-w-0 pl-[3.75rem] md:pl-24 lg:pl-32">
       <span
         aria-hidden
         className={`absolute left-0 top-0 grid size-10 place-items-center rounded-full border border-dashed ${
@@ -104,74 +101,56 @@ function Moment({
         />
       </span>
 
-      <Reveal>
-        <div className="flex flex-wrap items-center gap-2 pt-1.5">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[0.8rem] font-semibold tabular-nums ${
-              day ? "border-forest-deep/25" : "border-linen/25 text-linen"
+      <div className="grid gap-6 md:grid-cols-12 md:items-center md:gap-10">
+        <Reveal className="md:col-span-5">
+          <h3 className="display pt-0.5 text-[2.1rem] leading-[1] [text-wrap:balance] md:text-[3rem] lg:text-[3.6rem]">
+            {title}
+          </h3>
+          <p
+            className={`mt-4 max-w-[40ch] text-[1rem] leading-relaxed md:mt-6 md:text-[1.08rem] ${
+              day ? "text-forest-deep/80" : "text-linen/75"
             }`}
           >
-            <Clock size={14} weight="bold" />
-            {time}
-          </span>
-          {tag && (
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] ${
-                tag.gift
-                  ? "bg-brass text-forest-deep"
-                  : day
-                    ? "border border-forest-deep/25 text-forest-deep/75"
-                    : "border border-linen/25 text-linen/75"
-              }`}
-            >
-              {tag.gift && <Gift size={13} weight="fill" />}
-              {tag.label}
-            </span>
-          )}
-        </div>
-        <h3 className="display mt-5 max-w-[17ch] text-[2.3rem] leading-[1] md:text-[3.4rem] lg:text-[4.2rem]">
-          {title}
-        </h3>
-      </Reveal>
-      <div className="mt-7 md:mt-10">{children}</div>
+            {text}
+          </p>
+        </Reveal>
+        <div className="md:col-span-7">{media}</div>
+      </div>
     </li>
   );
 }
 
-function Text({ children, tone }: { children: React.ReactNode; tone: Tone }) {
+// Два кадра рядом, второй ниже первого. Ширины на десктопе ограничены (ролики 300–700px)
+function Pair({ children }: { children: [React.ReactNode, React.ReactNode] }) {
   return (
-    <Reveal
-      as="p"
-      className={`max-w-[44ch] text-[1.02rem] leading-relaxed md:text-[1.1rem] ${
-        tone === "day" ? "text-forest-deep/80" : "text-linen/75"
-      }`}
-    >
-      {children}
-    </Reveal>
+    <div className="flex items-start gap-3 md:gap-6">
+      <div className="w-[54%] md:w-[52%] lg:max-w-[360px]">{children[0]}</div>
+      <div className="mt-12 w-[42%] md:mt-24 md:w-[44%] lg:max-w-[300px]">{children[1]}</div>
+    </div>
   );
 }
 
 // Живой ролик с плавным появлением. Ширина ограничена разрешением ролика ×1,5 (см. LazyVideo)
 function Clip({
   video,
-  className = "",
   arch = false,
   delay = 0,
   caption,
+  className = "",
 }: {
   video: Video;
-  className?: string;
   arch?: boolean;
   delay?: number;
   // Подпись под роликом — только то, что действительно в кадре (docs/media-svadba.md)
   caption?: string;
+  className?: string;
 }) {
   return (
-    <Reveal delay={delay} className={className}>
+    <Reveal delay={delay}>
       <figure>
-        <LazyVideo video={video} shade className={`w-full ${arch ? "arch" : ""}`} />
+        <LazyVideo video={video} shade className={`w-full ${arch ? "arch" : ""} ${className}`} />
         {caption && (
-          <figcaption className="mt-2.5 text-[0.8rem] leading-snug opacity-65">{caption}</figcaption>
+          <figcaption className="mt-2 text-[0.78rem] leading-snug opacity-65">{caption}</figcaption>
         )}
       </figure>
     </Reveal>
@@ -194,7 +173,7 @@ function Sun({ progress }: { progress: MotionValue<number> }) {
     // На телефоне солнце у самого края и приглушено: колонка текста занимает почти всю ширину
     <div aria-hidden className="pointer-events-none sticky top-0 z-0 h-0 max-md:opacity-45">
       <motion.div
-        className="absolute -right-5 top-[9svh] size-14 md:right-[9%] md:top-[13svh] md:size-28"
+        className="absolute -right-5 top-[9svh] size-14 md:right-[6%] md:top-[13svh] md:size-24"
         style={{ y, scale, opacity: fade }}
       >
         <motion.span
@@ -297,70 +276,16 @@ function Strand({
 
 function Garland() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 95%", "start 15%"] });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 95%", "start 25%"] });
   return (
-    <div ref={ref} className="relative h-40 md:h-52">
-      <Strand progress={scrollYProgress} sag={62} count={26} top={0} offset={0} />
-      <Strand progress={scrollYProgress} sag={40} count={20} top={70} offset={0.2} />
-    </div>
-  );
-}
-
-/* ---------- Закат: солнце уходит за холмы ---------- */
-
-function Dusk() {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotionSafe();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 60%"] });
-  const textY = useTransform(scrollYProgress, [0, 1], ["40%", "-10%"]);
-  return (
-    // Фон — не позиционированный блок: солнце (sticky, z-0) рисуется поверх фона, но под холмами
-    <div
-      ref={ref}
-      className="h-[90svh] min-h-[560px] bg-[linear-gradient(180deg,var(--color-golden)_0%,#c96f3f_32%,#5d3b3b_60%,var(--color-night)_88%)]"
-    >
-      <div className="relative z-10 h-full">
-        <motion.p
-          style={reduce ? undefined : { y: textY }}
-          className="display absolute inset-x-0 top-[26%] px-4 text-center text-[2.6rem] italic leading-[1.02] text-linen md:text-[5rem]"
-        >
-          А вечером загораются
-          <br />
-          ретро-гирлянды
-        </motion.p>
-        {/* Холмы на горизонте */}
-        <svg
-          aria-hidden
-          viewBox="0 0 1440 220"
-          preserveAspectRatio="none"
-          className="absolute inset-x-0 bottom-0 h-[34%] w-full"
-        >
-          <path
-            d="M0 120 C160 70 300 60 460 96 C600 128 720 80 880 70 C1040 60 1180 110 1300 96 C1370 88 1410 80 1440 76 L1440 220 L0 220 Z"
-            fill="#1d2433"
-          />
-          <path
-            d="M0 160 C200 120 360 128 540 150 C700 170 860 130 1040 124 C1200 118 1330 150 1440 140 L1440 220 L0 220 Z"
-            fill="var(--color-night)"
-          />
-        </svg>
-      </div>
+    <div ref={ref} className="relative h-24 md:h-32">
+      <Strand progress={scrollYProgress} sag={48} count={24} top={0} offset={0} />
+      <Strand progress={scrollYProgress} sag={30} count={18} top={44} offset={0.2} />
     </div>
   );
 }
 
 /* ---------- Блок целиком ---------- */
-
-const programActivities = [
-  "Катание верхом",
-  "Катание в экипаже",
-  "Экскурсия в конюшню",
-  "Стрельба из лука и пневматики",
-  "Бросание лассо",
-  "Метание подков",
-  "Уличная Дженга",
-  "Постановочная кража невесты",
-];
 
 export function DayStory() {
   const sunRef = useRef<HTMLDivElement>(null);
@@ -373,252 +298,109 @@ export function DayStory() {
 
   return (
     <section id="den-svadby" aria-labelledby="story-title" className="relative">
-      {/* ДЕНЬ + ЗАКАТ: общий слой для солнца. isolate — своя стопка слоёв */}
+      {/* ДЕНЬ: общий слой для солнца. isolate — своя стопка слоёв. Внизу фон темнеет в ночь */}
       <div ref={sunRef} className="relative isolate overflow-clip">
         <Sun progress={sunProgress} />
 
-        <div className="bg-[linear-gradient(180deg,var(--color-dawn)_0%,var(--color-linen)_16%,var(--color-linen)_58%,var(--color-golden)_100%)] pb-28 pt-24 text-forest-deep md:pb-40 md:pt-36">
+        <div className="bg-[linear-gradient(180deg,var(--color-dawn)_0%,var(--color-linen)_12%,var(--color-linen)_55%,var(--color-golden)_84%,#b8653a_93%,var(--color-night)_100%)] pb-24 pt-16 text-forest-deep md:pb-40 md:pt-24">
           <div className="relative z-10 mx-auto max-w-[1440px] px-4 md:px-8">
-            <header className="pb-16 md:pb-24 md:pl-28 lg:pl-40">
+            <header className="pb-10 md:pb-16 md:pl-24 lg:pl-32">
               <p className="eyebrow text-saddle">Один день в Буцевичах</p>
               <h2
                 id="story-title"
-                className="display mt-5 max-w-[14ch] text-[2.8rem] leading-[0.98] md:text-[4.8rem] lg:text-[6rem]"
+                className="display mt-4 max-w-[14ch] text-[2.6rem] leading-[0.98] md:text-[4.4rem] lg:text-[5.2rem]"
               >
                 Как проходит свадьба <em className="text-saddle">в усадьбе</em>
               </h2>
-              <p className="mt-6 max-w-[44ch] text-[1.05rem] leading-relaxed text-forest-deep/75">
-                От утренних сборов до ночи под гирляндами. Всё на одной территории, в 23 км от
-                Минска.
+              <p className="mt-5 inline-flex rounded-full border border-dashed border-forest-deep/35 px-4 py-1.5 text-[0.85rem] text-forest-deep/80">
+                Примерный сценарий дня
               </p>
             </header>
 
             <div className="relative">
               <Trail target={dayRef} tone="day" className="left-0" />
-              <ol ref={dayRef} className="relative grid gap-28 md:gap-44">
-                <Moment time="09:00" tone="day" title="Утро: зал готовят к празднику">
-                  <div className="grid gap-8 md:grid-cols-12 md:items-end">
-                    <div className="md:col-span-5">
-                      <Text tone="day">
-                        Пока в светлом зале накрывают дубовые столы и раскладывают шифоновые
-                        ранеры, можно встретить рассвет над лесом на террасе с чашкой травяного
-                        чая.
-                      </Text>
-                    </div>
-                    <Clip
-                      video={videos.hallPrep}
-                      arch
-                      className="w-[64%] md:col-span-4 md:col-start-8 md:w-full"
-                    />
-                  </div>
-                </Moment>
-
+              <ol ref={dayRef} className="relative grid gap-14 md:gap-24">
                 <Moment
-                  time="12:00"
                   tone="day"
-                  title="Гостей встречают всадники верхом"
-                  tag={{ label: "в тематической программе" }}
-                >
-                  <RevealImage
-                    photo={photos.ridersWelcome}
-                    sizes="(min-width: 1024px) 80vw, 90vw"
-                    parallax={5}
-                    className="aspect-[4/3] w-full md:aspect-[16/9]"
-                  />
-                </Moment>
+                  title="Утро: зал готовят к празднику"
+                  text="Длинный стол, зелень и сервировка: к приезду гостей всё готово."
+                  media={
+                    <Pair>
+                      <Clip video={videos.hallPrep} arch />
+                      <Clip video={videos.hallEmpty} delay={0.15} caption="Окна в пол и буквы LOVE" />
+                    </Pair>
+                  }
+                />
 
                 <Moment
-                  time="13:00"
                   tone="day"
-                  title="Невеста выезжает на регистрацию верхом"
-                  tag={{ label: "в подарок", gift: true }}
-                >
-                  <div className="grid gap-8 md:grid-cols-12 md:items-center">
-                    <div className="md:col-span-5">
-                      <Text tone="day">
-                        Регистрация проходит на зелёной лужайке у арки из вековой сосны, гости
-                        сидят на тюках сена и лавочках. Невеста появляется верхом на лошади, и
-                        это наш подарок к площадке.
-                      </Text>
-                    </div>
-                    {/* TODO(фото): видео, где невеста именно выезжает верхом, в хорошем качестве */}
-                    <Clip
-                      video={videos.brideHorsesSunset}
-                      arch
-                      caption="Невеста с лошадьми на закате"
-                      className="w-[70%] md:col-span-4 md:col-start-8 md:w-full"
-                    />
-                  </div>
-                </Moment>
+                  title="Регистрация на лугу у арки"
+                  text="Живописная зелёная лужайка и стилизованная свадебная арка из вековой сосны. Для гостей тюки сена и лавочки."
+                  media={
+                    <Pair>
+                      {/* Вверху кадра белый стикер из Instagram — увеличиваем от нижнего края */}
+                      <RevealImage
+                        photo={instaPhotos.ceremonyMeadow}
+                        shape="arch"
+                        sizes="(min-width: 1024px) 360px, 54vw"
+                        imgClassName="origin-bottom scale-[1.2] object-[46%_50%]"
+                        className="aspect-[4/5] w-full"
+                      />
+                      <Clip video={videos.ceremonyArchShort} delay={0.15} caption="Арка и тюки сена для гостей" />
+                    </Pair>
+                  }
+                />
 
                 <Moment
-                  time="14:00"
                   tone="day"
                   title="Фотосессия с лошадьми"
-                  tag={{ label: "в подарок", gift: true }}
-                >
-                  <Text tone="day">
-                    Для молодых выводим лошадей и даём сопровождающего. Фотосессия тоже входит в
-                    стоимость площадки.
-                  </Text>
-                  <div className="mt-10 flex items-start gap-4 md:gap-8">
-                    <Clip
-                      video={videos.brideWalk}
-                      caption="Идём к лошадям на золотой час"
-                      className="w-[50%] lg:w-[420px]"
-                    />
-                    <Clip
-                      video={videos.ridersField}
-                      delay={0.15}
-                      className="mt-16 w-[46%] md:mt-28 lg:w-[440px]"
-                    />
-                  </div>
-                </Moment>
-
-                <Moment time="15:00" tone="day" title="Фуршет в беседках и на лугу">
-                  <div className="grid gap-8 md:grid-cols-12">
-                    <div className="md:col-span-4">
-                      <Text tone="day">
-                        Открытые беседки для фуршета, лаунж-зоны с диванами из паллет и
-                        креслами-мешками. Готовит наш повар, обслуживают официанты.
-                      </Text>
+                  text="Для молодых выводим лошадей и даём сопровождающего. Вокруг усадьбы холмистые поля и лес."
+                  media={
+                    // Здесь только настоящий свадебный кадр: ролик 06 (невеста с лошадьми) — на первом экране
+                    <div className="w-[84%] md:w-full md:max-w-[420px]">
+                      <Clip video={videos.brideWalk} caption="Невеста и гости идут к полю, рядом ведут лошадь" />
                     </div>
-                    <div className="flex items-start gap-4 md:col-span-8 md:gap-8">
-                      {/* Ролик 23 не берём: внизу кадра осталась подпись из Instagram */}
-                      <RevealImage
-                        photo={instaPhotos.fourchetteTable}
-                        sizes="(min-width: 1024px) 340px, 48vw"
-                        className="aspect-[1080/1478] w-[48%] lg:w-[340px]"
-                      />
-                      <Clip
-                        video={videos.fourchette}
-                        delay={0.15}
-                        className="mt-12 w-[48%] md:mt-24 lg:w-[400px]"
-                      />
-                    </div>
-                  </div>
-                </Moment>
+                  }
+                />
 
                 <Moment
-                  time="16:00"
                   tone="day"
-                  title="Ковбойская программа для гостей"
-                  tag={{ label: `${addons.program.pricePerGuest} руб с гостя` }}
-                >
-                  <ul className="flex max-w-[760px] flex-wrap gap-2">
-                    {programActivities.map((a, i) => (
-                      <Reveal
-                        as="li"
-                        key={a}
-                        delay={i * 0.05}
-                        y={12}
-                        className="rounded-full border border-dashed border-forest-deep/30 px-4 py-2 text-[0.92rem]"
-                      >
-                        {a}
-                      </Reveal>
-                    ))}
-                  </ul>
-                  <div className="mt-10 grid grid-cols-12 gap-4 md:gap-6">
-                    <RevealImage
-                      photo={photos.stableSilhouettes}
-                      sizes="(min-width: 768px) 60vw, 90vw"
-                      parallax={4}
-                      className="col-span-12 aspect-[4/3] md:col-span-8 md:aspect-[16/10]"
-                    />
-                    <RevealImage
-                      photo={photos.archery}
-                      sizes="(min-width: 768px) 30vw, 60vw"
-                      delay={0.15}
-                      className="col-span-8 col-start-5 -mt-16 aspect-[3/2] md:col-span-4 md:col-start-9 md:mt-40"
-                    />
-                  </div>
-                </Moment>
-
-                <Moment time="18:00" tone="day" title="Банкет в светлом зале с окнами в пол">
-                  <div className="grid gap-8 md:grid-cols-12 md:items-end">
-                    <div className="relative md:col-span-7">
+                  title="Фуршет и банкет"
+                  text="Фуршет в открытых беседках и лаунж-зонах, банкет в светлом зале с окнами в пол. Готовит наш повар, обслуживают официанты."
+                  media={
+                    <Pair>
                       <RevealImage
-                        photo={instaPhotos.hallTable}
-                        sizes="(min-width: 1024px) 460px, 78vw"
-                        className="aspect-[828/1118] w-[78%] lg:w-[460px]"
+                        photo={instaPhotos.fourchetteTable}
+                        sizes="(min-width: 1024px) 360px, 54vw"
+                        className="aspect-[1080/1478] w-full"
                       />
-                      <Clip
-                        video={videos.hallEmpty}
-                        delay={0.2}
-                        className="absolute -bottom-10 right-0 w-[46%] border-[5px] border-golden md:-bottom-14 md:right-4 lg:w-[300px]"
-                      />
-                    </div>
-                    <div className="mt-8 grid gap-5 md:col-span-5 md:mt-0">
-                      {/* TODO(вместимость): цифру здесь не повторяем — одна на страницу, MAX_GUESTS
-                          в lib/wedding.ts (на старом сайте 80 / 100 / 120, уточнить у клиента) */}
-                      <Text tone="day">
-                        Новый зал 170 м² из беленого дерева: окна в пол в две стены и шикарные
-                        виды на поля. Дубовые столы в стиле эко-лофт и шифоновые ранеры.
-                      </Text>
-                      <Text tone="day">
-                        Банкет, фуршет и обслуживание от {addons.banquet.pricePerGuestMin} до{" "}
-                        {addons.banquet.pricePerGuestMax} руб с гостя.
-                      </Text>
-                    </div>
-                  </div>
-                </Moment>
+                      <Clip video={videos.firstDance} delay={0.15} caption="Первый танец под навесом" />
+                    </Pair>
+                  }
+                />
               </ol>
             </div>
           </div>
         </div>
-
-        <Dusk />
       </div>
 
       {/* НОЧЬ */}
-      <div className="bg-night pb-28 text-linen md:pb-40">
+      <div className="bg-night pb-16 text-linen md:pb-24">
         <Garland />
-        <div className="relative mx-auto max-w-[1440px] px-4 pt-8 md:px-8">
+        <div className="relative mx-auto max-w-[1440px] px-4 pt-4 md:px-8">
           <Trail target={nightRef} tone="night" />
-          <ol ref={nightRef} className="relative grid gap-28 md:gap-44">
-            <Moment time="21:00" tone="night" title="Вечер под ретро-гирляндами">
-              <div className="grid gap-8 md:grid-cols-12 md:items-center">
-                <Clip video={videos.eveningGazebo} arch className="w-[72%] md:col-span-5 md:w-full" />
-                <div className="md:col-span-5 md:col-start-8">
-                  <Text tone="night">
-                    Вечерняя праздничная подсветка ретро-гирляндами в зале и на улице, открытые
-                    беседки и лаунж-зоны с диванами из паллет.
-                  </Text>
-                </div>
-              </div>
-            </Moment>
-
-            <Moment time="22:00" tone="night" title="Танцы на террасе">
-              <div className="grid gap-8 md:grid-cols-12 md:items-center">
-                <div className="md:col-span-5">
-                  <Text tone="night">
-                    Для танцев — большая терраса у зала, а вечером её освещают ретро-гирлянды.
-                  </Text>
-                </div>
-                <Clip
-                  video={videos.firstDance}
-                  caption="Первый танец под навесом"
-                  className="w-[72%] md:col-span-5 md:col-start-8 md:w-full"
-                />
-              </div>
-            </Moment>
-
-            {/* TODO(вместимость): «ночлег до 40» есть в разделах 5 и 7, но в разделе 18 спорный */}
-            <Moment time="23:00" tone="night" title="Ночь: гости остаются в усадьбе">
-              <Text tone="night">
-                До 40 гостей ночуют в наших домах КАНТРИ и ШАЛЕ. На второй день баня на дровах и
-                мангалы.
-              </Text>
-              <div className="mt-10 flex items-start gap-4 md:gap-8">
-                <Clip video={videos.nightBonfire} className="w-[48%] lg:w-[360px]" />
-                <RevealImage
-                  photo={instaPhotos.nightSparklers}
-                  sizes="(min-width: 1024px) 380px, 48vw"
-                  delay={0.15}
-                  className="mt-16 aspect-[1083/1679] w-[48%] md:mt-28 lg:w-[380px]"
-                />
-              </div>
-            </Moment>
+          <ol ref={nightRef} className="relative grid">
+            <Moment
+              tone="night"
+              title="Ночь под ретро-гирляндами"
+              text="Вечерняя праздничная подсветка ретро-гирляндами в зале и на улице, танцы на большой террасе."
+              media={
+                <Pair>
+                  <Clip video={videos.eveningGazebo} arch />
+                  <Clip video={videos.nightBonfire} delay={0.15} caption="Костёр и светящиеся буквы LOVE" />
+                </Pair>
+              }
+            />
           </ol>
         </div>
       </div>

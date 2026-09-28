@@ -3,19 +3,19 @@
 import { useEffect, useState } from "react";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { ArrowRight, ArrowUpRight, Quotes } from "@phosphor-icons/react";
-import { REVIEWS_TOTAL_LABEL, weddingReviews } from "@/lib/wedding";
+import { featuredReviews, REVIEWS_TOTAL_LABEL } from "@/lib/wedding";
 import { DemoLink } from "@/components/site/demo-link";
 import { Reveal } from "@/components/ui/motion";
 import { useReducedMotionSafe } from "@/components/ui/hooks";
 
 /*
-  Стопка свадебных отзывов. Верхнюю карточку можно смахнуть в сторону (drag + пружина) —
+  Стопка из трёх отзывов разных авторов (featuredReviews: свадебный и два самых свежих). Верхнюю карточку можно смахнуть в сторону (drag + пружина) —
   она улетает и уходит в низ стопки, следующая поднимается. То же делает кнопка «Следующий отзыв».
   Последняя карточка — ссылка на все отзывы.
 */
 
 type Item = { kind: "review"; index: number } | { kind: "more" };
-const ITEMS: Item[] = [...weddingReviews.map((_, index) => ({ kind: "review" as const, index })), { kind: "more" }];
+const ITEMS: Item[] = [...featuredReviews.map((_, index) => ({ kind: "review" as const, index })), { kind: "more" }];
 const N = ITEMS.length;
 // Поворот карточек в глубине стопки — чтобы стопка выглядела живой, а не ровной колонкой
 const TILT = [0, -3, 2.4, -1.6];
@@ -103,7 +103,7 @@ function ReviewCard({
             </p>
             <div className="mt-auto pt-8">
               <DemoLink
-                link={{ label: "Читать все отзывы", href: "/otzyvy" }}
+                link={{ label: "Читать все отзывы", href: "/otzyvy", oldSite: "https://verhom.by/otzyvy" }}
                 className="link-underline inline-flex items-center gap-2 text-linen"
               />
               <ArrowUpRight size={16} className="ml-1 inline" aria-hidden />
@@ -116,7 +116,7 @@ function ReviewCard({
 }
 
 function ReviewBody({ index }: { index: number }) {
-  const r = weddingReviews[index];
+  const r = featuredReviews[index];
   return (
     <figure className="relative flex flex-1 flex-col">
       <div className="flex items-center justify-between gap-4">
@@ -150,12 +150,12 @@ export function Reviews() {
   const shown = order[0];
 
   return (
-    <section id="otzyvy" aria-labelledby="reviews-title" className="overflow-hidden bg-forest py-24 text-linen md:py-36">
+    <section id="otzyvy" aria-labelledby="reviews-title" className="overflow-hidden bg-forest py-16 text-linen md:py-24">
       <div className="mx-auto grid max-w-[1400px] gap-14 px-4 md:px-8 lg:grid-cols-12 lg:items-center lg:gap-10">
         <Reveal className="lg:col-span-5">
           <p className="eyebrow text-brass">Отзывы</p>
           <h2 id="reviews-title" className="display mt-5 text-[2.8rem] leading-[0.98] md:text-[4.4rem]">
-            Что пишут <em className="text-brass">гости свадеб</em>
+            Что пишут <em className="text-brass">наши гости</em>
           </h2>
           <p className="mt-5 max-w-[38ch] text-[1rem] leading-relaxed text-linen/75">
             Отзывы с нашего сайта, сокращены без изменения смысла. Смахните карточку, чтобы

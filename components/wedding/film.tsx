@@ -10,7 +10,7 @@ import { Reveal } from "@/components/ui/motion";
 
 /*
   «Фильм одной свадьбы»: постер и кнопка, по клику — окно 16:9 с видео и controls.
-  Исходник 638×360 без звука, поэтому окно не шире 720px. Видео не грузится, пока окно закрыто.
+  Исходник 638×360 (звуковой дорожки нет, на странице об этом не пишем), поэтому окно не шире 720px. Видео не грузится, пока окно закрыто.
   TODO(права): фильм снят сторонним автором — нужно разрешение на показ; TODO(медиа): оригинал
   в хорошем качестве и со звуком.
 */
@@ -23,7 +23,7 @@ export function Film() {
   const close = useCallback(() => setOpen(false), []);
 
   return (
-    <section id="film" aria-labelledby="film-title" className="bg-linen py-24 text-forest-deep md:py-36">
+    <section id="film" aria-labelledby="film-title" className="bg-linen py-16 text-forest-deep md:py-24">
       <div className="mx-auto grid max-w-[1440px] gap-10 px-4 md:px-8 lg:grid-cols-12 lg:items-center lg:gap-10">
         <Reveal className="lg:col-span-4">
           <p className="eyebrow text-saddle">Фильм</p>
@@ -76,7 +76,7 @@ export function Film() {
               </Magnetic>
             </div>
             <p className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-[0.8rem] text-linen/85 md:p-7">
-              «Дмитрий и Яна» · без звука
+              «Дмитрий и Яна»
             </p>
           </div>
         </Reveal>
@@ -100,7 +100,7 @@ export function Film() {
           />
         </div>
         <p className="mt-4 text-center text-[0.85rem] text-linen/70">
-          Свадебный фильм «Дмитрий и Яна» в Буцевичах · {DURATION}, без звука
+          Свадебный фильм «Дмитрий и Яна» в Буцевичах · {DURATION}
         </p>
       </Modal>
     </section>

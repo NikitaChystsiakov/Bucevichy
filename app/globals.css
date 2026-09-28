@@ -420,60 +420,6 @@ html[data-preloader] .preloader {
   box-shadow: 0 0 0 1px var(--color-saddle);
 }
 
-/* ---------- Церемония: падающие лепестки ---------- */
-.petal {
-  position: absolute;
-  top: 0;
-  left: var(--x, 50%);
-  width: var(--s, 10px);
-  height: calc(var(--s, 10px) * 1.3);
-  border-radius: 80% 0 80% 0;
-  background: linear-gradient(135deg, #fdf3ec, #e8c2b0);
-  box-shadow: 0 2px 6px rgb(20 28 23 / 0.18);
-  opacity: 0.9;
-  transform: translate3d(0, -10svh, 0);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .petal {
-    /* Отрицательная задержка: лепестки уже «в полёте» при появлении сцены */
-    animation: petal-fall var(--dur, 14s) linear var(--delay, 0s) infinite;
-  }
-}
-@keyframes petal-fall {
-  0% {
-    transform: translate3d(0, -10svh, 0) rotate(0deg);
-  }
-  25% {
-    transform: translate3d(var(--sway, 30px), 22svh, 0) rotate(110deg);
-  }
-  50% {
-    transform: translate3d(calc(var(--sway, 30px) * -0.5), 52svh, 0) rotate(240deg);
-  }
-  75% {
-    transform: translate3d(var(--sway, 30px), 82svh, 0) rotate(370deg);
-  }
-  100% {
-    transform: translate3d(0, 112svh, 0) rotate(500deg);
-  }
-}
-
-/* ---------- Карта усадьбы: пульсирующие точки ---------- */
-@media (prefers-reduced-motion: no-preference) {
-  .pulse-ring {
-    animation: pulse-ring 2.6s var(--ease-out-soft) var(--delay, 0s) infinite;
-  }
-}
-@keyframes pulse-ring {
-  from {
-    transform: scale(1);
-    opacity: 0.75;
-  }
-  to {
-    transform: scale(3.2);
-    opacity: 0;
-  }
-}
-
 /* ---------- Pricing: янтарный луч по рамке итоговой карточки ---------- */
 /* Маска оставляет от слоя только полоску рамки (padding), внутри крутится conic-gradient.
    Анимируется только transform псевдоэлемента. */

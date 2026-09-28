@@ -304,7 +304,7 @@ export function Gallery() {
   };
 
   return (
-    <section id="galereya" aria-labelledby="gallery-title" className="overflow-hidden bg-forest-deep py-24 text-linen md:py-36">
+    <section id="galereya" aria-labelledby="gallery-title" className="overflow-hidden bg-forest-deep py-16 text-linen md:py-24">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-4 md:flex-row md:items-end md:justify-between md:px-8">
         <Reveal>
           <p className="eyebrow text-brass">Галерея</p>
@@ -312,8 +312,8 @@ export function Gallery() {
             Буцевичи <em className="text-brass">в кадре</em>
           </h2>
           <p className="mt-5 max-w-[40ch] text-[1rem] leading-relaxed text-linen/75">
-            Луг с аркой, зал, лошади и вечер в гирляндах. Тяните ленту, нажмите на фото, чтобы открыть
-            его крупно.
+            Зал, фуршет, лошади и лесные тропы. Тяните ленту, нажмите на фото, чтобы открыть его
+            крупно.
           </p>
         </Reveal>
         <div className="flex items-center gap-3">

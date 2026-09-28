@@ -159,7 +159,7 @@ export function Hall() {
   const fill = ((guests - GUESTS_MIN) / (GUESTS_MAX - GUESTS_MIN)) * 100;
 
   return (
-    <section id="zal" aria-labelledby="hall-title" className="bg-linen py-24 text-forest-deep md:py-36">
+    <section id="zal" aria-labelledby="hall-title" className="bg-linen py-16 text-forest-deep md:py-24">
       <div className="mx-auto max-w-[1440px] px-4 md:px-8">
         <Reveal>
           <p className="eyebrow text-saddle">Зал</p>
@@ -171,7 +171,7 @@ export function Hall() {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid gap-12 md:mt-16 lg:grid-cols-12 lg:gap-10">
+        <div className="mt-8 grid gap-10 md:mt-12 lg:grid-cols-12 lg:gap-10">
           {/* Фото: день / вечер */}
           <div className="lg:col-span-6">
             <div
@@ -208,7 +208,7 @@ export function Hall() {
             </div>
 
             <figure className="mt-5">
-              <div className="relative aspect-[4/5] overflow-hidden bg-forest md:aspect-[4/3] lg:aspect-[4/5]">
+              <div className="relative aspect-square overflow-hidden bg-forest md:aspect-[4/3] lg:aspect-[4/5]">
                 {(Object.keys(modePhoto) as Mode[]).map((m) => (
                   <motion.div
                     key={m}
@@ -243,7 +243,7 @@ export function Hall() {
               {hall.text}
             </Reveal>
 
-            <Reveal delay={0.1} className="mt-10 rounded-[20px] border border-forest-deep/12 bg-forest-deep/[0.035] p-4 md:p-6">
+            <Reveal delay={0.1} className="mt-8 rounded-[20px] border border-forest-deep/12 bg-forest-deep/[0.035] p-4 md:p-6">
               <div className="text-forest-deep">
                 <HallPlan guests={guests} />
               </div>

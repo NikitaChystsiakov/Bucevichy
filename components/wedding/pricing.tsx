@@ -168,8 +168,9 @@ export function Pricing() {
   const [season, setSeason] = useState<SeasonKey>("summer");
   const [day, setDay] = useState<DayKey>("sat");
   const [guests, setGuests] = useState(GUESTS_DEFAULT);
-  const [withProgram, setWithProgram] = useState(true);
-  const [withDecor, setWithDecor] = useState(true);
+  // По умолчанию — площадка и банкет; программу и оформление гость включает сам
+  const [withProgram, setWithProgram] = useState(false);
+  const [withDecor, setWithDecor] = useState(false);
   const [withBanquet, setWithBanquet] = useState(true);
 
   const venue = venuePrice(day, season);
@@ -207,7 +208,7 @@ export function Pricing() {
       aria-labelledby="price-title"
       // overflow-clip, а не hidden: hidden делает секцию контейнером прокрутки, и калькулятор
       // внутри перестаёт прилипать (sticky)
-      className="relative overflow-clip bg-saddle py-24 text-linen md:py-36"
+      className="relative overflow-clip bg-saddle py-16 text-linen md:py-24"
     >
       {/* «Строчка седла» у верхнего и нижнего края */}
       <span aria-hidden className="stitch absolute inset-x-3 top-3 text-linen md:inset-x-5 md:top-5" />
@@ -218,7 +219,7 @@ export function Pricing() {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_55%_at_15%_0%,rgb(246_217_184/0.18),transparent_70%),radial-gradient(60%_60%_at_100%_100%,rgb(20_28_23/0.35),transparent_70%)]"
       />
 
-      <div className="relative mx-auto grid max-w-[1400px] gap-12 px-4 md:px-8 lg:grid-cols-12 lg:gap-x-10 lg:gap-y-14">
+      <div className="relative mx-auto grid max-w-[1400px] gap-10 px-4 md:px-8 lg:grid-cols-12 lg:gap-x-10 lg:gap-y-14">
         {/* Площадка: сезон и день недели */}
         <div className="lg:col-span-7">
           <Reveal>
@@ -234,7 +235,7 @@ export function Pricing() {
           <div
             role="radiogroup"
             aria-label="Месяц"
-            className="mt-10 inline-flex rounded-full border border-linen/25 bg-forest-deep/20 p-1"
+            className="mt-8 inline-flex rounded-full border border-linen/25 bg-forest-deep/20 p-1"
           >
             {seasons.map((s) => (
               <button
@@ -273,7 +274,7 @@ export function Pricing() {
                   role="radio"
                   aria-checked={active}
                   onClick={() => setDay(d.key)}
-                  className="group relative flex items-baseline justify-between gap-4 border-b border-linen/20 px-3 py-5 text-left md:px-5 md:py-6"
+                  className="group relative flex items-baseline justify-between gap-4 border-b border-linen/20 px-3 py-4 text-left md:px-5 md:py-5"
                 >
                   {active && (
                     <motion.span
@@ -405,13 +406,13 @@ export function Pricing() {
 
         {/* Что входит и подарки */}
         <div className="lg:col-span-7">
-          <div className="grid gap-10 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
             {venueIncludes.map((group, gi) => (
               <Reveal key={group.title} delay={gi * 0.1}>
                 <h3 className="text-[0.95rem] font-semibold text-linen">
                   Что входит: {group.title.toLowerCase()}
                 </h3>
-                <ul className="mt-4 grid gap-3">
+                <ul className="mt-3 grid gap-2.5">
                   {group.items.map((item) => (
                     <li key={item} className="flex gap-3 text-[0.95rem] leading-snug text-linen/85">
                       <Check size={16} weight="bold" className="mt-0.5 shrink-0 text-brass-soft" />
@@ -423,7 +424,7 @@ export function Pricing() {
             ))}
           </div>
 
-          <Reveal className="relative mt-10 grid gap-3 rounded-[20px] bg-forest-deep/25 p-5 md:grid-cols-2 md:p-6">
+          <Reveal className="relative mt-8 grid gap-3 rounded-[20px] bg-forest-deep/25 p-5 md:grid-cols-2 md:p-6">
             <span
               aria-hidden
               className="pointer-events-none absolute inset-[5px] rounded-[16px] border border-dashed border-linen/35"

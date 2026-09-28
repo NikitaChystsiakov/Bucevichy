@@ -11,14 +11,13 @@ import {
   useScroll,
 } from "motion/react";
 import { CaretDown, List, Phone, X } from "@phosphor-icons/react";
-import { contacts, nav, type NavLink } from "@/lib/site";
+import { contacts, nav } from "@/lib/site";
 import { Horseshoe } from "@/components/ui/motifs";
 import { Magnetic } from "@/components/ui/magnetic";
 import { useFocusTrap } from "@/components/ui/hooks";
 import { useBooking } from "./booking-provider";
 import { BrandIcon } from "./brand-icons";
-
-const NOT_READY = "Этот раздел появится в полной версии сайта";
+import { DemoLink } from "./demo-link";
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 export function Wordmark({ className = "" }: { className?: string }) {
@@ -35,22 +34,11 @@ export function Wordmark({ className = "" }: { className?: string }) {
   );
 }
 
-function useNavClick() {
-  const { showToast } = useBooking();
-  return (link: NavLink) => (e: React.MouseEvent) => {
-    if (!link.ready) {
-      e.preventDefault();
-      showToast(NOT_READY);
-    }
-  };
-}
-
 export function Header() {
   const { scrollY } = useScroll();
   const reduce = useReducedMotion();
   const pathname = usePathname();
   const { openBooking } = useBooking();
-  const onNav = useNavClick();
   const [compact, setCompact] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -137,14 +125,10 @@ export function Header() {
                           />
                         </button>
                       ) : (
-                        <Link
-                          href={item.href}
-                          prefetch={item.ready ? undefined : false}
-                          onClick={onNav(item)}
+                        <DemoLink
+                          link={item}
                           className="block rounded-full px-3.5 py-2 text-[0.9rem] transition hover:text-brass"
-                        >
-                          {item.label}
-                        </Link>
+                        />
                       )}
 
                       <AnimatePresence>
@@ -159,23 +143,24 @@ export function Header() {
                             <ul className="min-w-[240px] rounded-[20px] border border-linen/10 bg-forest/95 p-2 shadow-[0_24px_60px_rgb(0_0_0/0.45)] backdrop-blur-xl">
                               {item.children!.map((child) => (
                                 <li key={child.label}>
-                                  <Link
-                                    href={child.href}
-                                    prefetch={child.ready ? undefined : false}
-                                    onClick={(e) => {
-                                      onNav(child)(e);
-                                      setOpenDrop(null);
-                                    }}
-                                    aria-current={isActive(child.href) ? "page" : undefined}
-                                    className={`flex items-center justify-between rounded-[14px] px-4 py-3 text-[0.95rem] transition hover:bg-linen/[0.06] ${
-                                      isActive(child.href) ? "text-brass" : "text-linen"
-                                    }`}
-                                  >
-                                    {child.label}
-                                    {isActive(child.href) && (
+                                  {/* Текущая страница — обычная ссылка с пометкой «вы здесь» */}
+                                  {isActive(child.href) ? (
+                                    <Link
+                                      href={child.href}
+                                      onClick={() => setOpenDrop(null)}
+                                      aria-current="page"
+                                      className="flex items-center justify-between rounded-[14px] px-4 py-3 text-[0.95rem] text-brass transition hover:bg-linen/[0.06]"
+                                    >
+                                      {child.label}
                                       <span className="text-[0.7rem] text-brass/80">вы здесь</span>
-                                    )}
-                                  </Link>
+                                    </Link>
+                                  ) : (
+                                    <DemoLink
+                                      link={child}
+                                      onNavigate={() => setOpenDrop(null)}
+                                      className="flex items-center justify-between rounded-[14px] px-4 py-3 text-[0.95rem] text-linen transition hover:bg-linen/[0.06]"
+                                    />
+                                  )}
                                 </li>
                               ))}
                             </ul>
@@ -232,7 +217,6 @@ export function Header() {
 }
 
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const onNav = useNavClick();
   const reduce = useReducedMotion();
   const pathname = usePathname();
   const { openBooking } = useBooking();
@@ -277,13 +261,9 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                     transition={{ delay: 0.18 + i * 0.035, duration: 0.5, ease: EASE }}
                     className="border-b border-dashed border-linen/10"
                   >
-                    <Link
-                      href={link.href}
-                      prefetch={link.ready ? undefined : false}
-                      onClick={(e) => {
-                        onNav(link)(e);
-                        if (link.ready) onClose();
-                      }}
+                    <DemoLink
+                      link={link}
+                      onNavigate={onClose}
                       className={`display flex items-baseline justify-between py-2.5 text-[1.9rem] ${
                         active ? "italic text-brass" : ""
                       }`}
@@ -294,7 +274,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                           {link.group}
                         </span>
                       )}
-                    </Link>
+                    </DemoLink>
                   </motion.li>
                 );
               })}

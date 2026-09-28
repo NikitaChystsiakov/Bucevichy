@@ -77,9 +77,13 @@ export type HeroMedia = ({ kind: "photo" } & Photo) | Video;
 
 // Первый экран. Чтобы поставить видео, замените строку, например: `= videos.eveningGazebo;`
 export const heroMedia: HeroMedia = { kind: "photo", ...instaPhotos.coupleFog };
+// Арка-вставка поверх главного фото: «Выезд невесты верхом — в подарок».
+// TODO(фото): нужен ролик, где невеста именно выезжает верхом, в хорошем качестве
+export const heroInset: Video = videos.brideHorsesSunset;
 
-// Галерея: лучшие кадры в порядке свадебного дня (утро → ночь). Подписи — только то, что в кадре.
-// Фото 22 (hero) и 20 (финальный экран) не повторяем. Кадры 19 и 12 — постеры роликов.
+// Галерея: только кадры, которых больше нет на странице. Правило финальных правок: каждое фото и
+// видео стоит на странице один раз (луг, зал 01/13, фуршет 25, ночные кадры — в своих блоках).
+// Подписи — только то, что в кадре; у кадров с корпоративов нет слова «свадьба».
 // TODO(фото): настоящих свадебных фото мало, часть кадров — прогулки и корпоративы; запросить у клиента.
 // crop — классы для картинки, если кадр надо подрезать (остатки стикеров Instagram)
 export type GalleryItem = Photo & { caption: string; crop?: string };
@@ -87,20 +91,16 @@ export type GalleryItem = Photo & { caption: string; crop?: string };
 const g = (photo: Photo, caption: string, crop?: string): GalleryItem => ({ ...photo, caption, crop });
 
 export const gallery: GalleryItem[] = [
-  // Вверху кадра белый стикер из Instagram — увеличиваем от нижнего края, как в «Почему здесь»
-  g(instaPhotos.ceremonyMeadow, "Луг с аркой и тюками сена", "origin-bottom scale-[1.2]"),
   g(instaPhotos.ringsHorseshoes, "Кольца на подковах"),
+  // Кадр из ролика 24 (сам ролик на странице не стоит)
+  g(posterPhoto(videos.fourchette), "Фуршет под навесом"),
+  g(photos.hallSun, "Зал 170 м² с окнами в пол"),
+  g(photos.hallWide, "Деревянные балки и свет из окон"),
+  // Два кадра с корпоративов (korporativ/4672, 4678)
+  g(photos.ridersWelcome, "Всадники встречают гостей"),
+  g(photos.stableSilhouettes, "Экскурсия в конюшню"),
+  // Фото из папки korporativ: наездница в леваде — не невеста, поэтому не в «Фотосессии с лошадьми»
   g(photos.riderPaint, "Верхом в леваде"),
   g(photos.ridersPair, "Вдвоём к лесу"),
-  g(photos.girlWithHorse, "Золотой час"),
-  g(instaPhotos.fourchetteTable, "Фуршет под навесом"),
-  g(photos.hallSun, "Зал 170 м² с окнами в пол"),
-  g(instaPhotos.hallTable, "Стол в зелени, буквы LOVE"),
-  g(photos.ridersWelcome, "Всадники встречают гостей"),
-  g(photos.whiteHorseForest, "Лесная тропа"),
-  g(photos.horseMuzzle, "В конюшне"),
-  g(posterPhoto(videos.firstDance), "Первый танец"),
-  g(photos.chaletEvening, "Вечер в гирляндах"),
-  g(instaPhotos.nightGazeboSign, "Беседка ночью"),
-  g(posterPhoto(videos.nightBonfire), "Костёр и LOVE"),
+  g(photos.forestRide, "Лесная тропа из седла"),
 ];

@@ -2,8 +2,9 @@
 
 import { useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { ArrowRight, ChatCircleDots, CheckCircle, WarningCircle } from "@phosphor-icons/react";
 import { Magnetic } from "@/components/ui/magnetic";
+import { ContactButtons } from "./contact-buttons";
 
 export type LeadPreset = {
   topic?: "date" | "visit";
@@ -65,7 +66,8 @@ function PetalBurst() {
   );
 }
 
-type Status = "idle" | "sending" | "sent" | "error";
+// offline — сервер принял запрос, но отправка заявок не настроена (демо): просим написать самим
+type Status = "idle" | "sending" | "sent" | "offline" | "error";
 
 const field =
   "w-full rounded-[12px] border border-linen/20 bg-forest-deep/40 px-4 py-3.5 text-[16px] text-linen outline-none transition placeholder:text-linen/45 focus:border-brass focus:bg-forest-deep/60";
@@ -93,7 +95,12 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, topic: preset?.topic ?? "date" }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      const json = (await res.json().catch(() => null)) as { ok?: boolean; reason?: string } | null;
+      if (json?.reason === "not_configured") {
+        setStatus("offline");
+        return;
+      }
+      if (!res.ok || !json?.ok) throw new Error(String(res.status));
       setStatus("sent");
     } catch {
       setStatus("error");
@@ -236,11 +243,26 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
             />
           </div>
 
+          {status === "offline" && (
+            <div role="status" className="grid gap-3">
+              <p className="flex gap-2.5 rounded-[14px] border border-brass/40 bg-brass/10 p-4 text-[0.92rem] leading-snug text-linen">
+                <ChatCircleDots size={20} className="mt-px shrink-0 text-brass" />
+                <span>
+                  Онлайн-заявки заработают после запуска сайта. А пока напишите нам в Viber или Telegram
+                  или позвоните — скажем, свободна ли ваша дата.
+                </span>
+              </p>
+              <ContactButtons />
+            </div>
+          )}
           {status === "error" && (
-            <p className="flex items-center gap-2 text-sm text-brass" role="alert">
-              <WarningCircle size={18} />
-              Не получилось отправить. Позвоните нам или попробуйте ещё раз.
-            </p>
+            <div role="alert" className="grid gap-3">
+              <p className="flex items-center gap-2 text-sm text-brass">
+                <WarningCircle size={18} className="shrink-0" />
+                Не получилось отправить. Напишите нам в Viber или Telegram, позвоните или попробуйте ещё раз.
+              </p>
+              <ContactButtons />
+            </div>
           )}
 
           <Magnetic className="mt-1 flex" strength={0.12}>

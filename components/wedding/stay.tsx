@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
-import { ArrowRight, Bed, Campfire, Fire } from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react";
 import { houses, stay, type HouseKey } from "@/lib/wedding";
 import { photos, type Photo } from "@/lib/photos";
 import { useBooking } from "@/components/site/booking-provider";
@@ -21,8 +21,6 @@ const housePhotos: Record<HouseKey, Photo[]> = {
   country: [photos.countrySunset, photos.countryDay, photos.countryLiving, photos.countryBedroom],
   chalet: [photos.chaletEvening, photos.chaletDay, photos.chaletLiving, photos.fireplace],
 };
-
-const perkIcons = [Bed, Fire, Campfire];
 
 function HouseCard({ index }: { index: number }) {
   const house = houses[index];
@@ -49,7 +47,7 @@ function HouseCard({ index }: { index: number }) {
         onPointerEnter={fine ? () => setHover(true) : undefined}
         onPointerLeave={fine ? () => setHover(false) : undefined}
       >
-        <div className="relative aspect-[4/5] overflow-hidden bg-forest lg:aspect-[5/4]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-forest lg:aspect-[5/4]">
           {list.map((p, i) => {
             const on = i === current;
             return (
@@ -106,12 +104,12 @@ function HouseCard({ index }: { index: number }) {
           </div>
         </div>
 
-        <div className="pt-6 md:pt-8">
-          <h3 className="display text-[3rem] leading-[0.9] tracking-[0.02em] md:text-[4.4rem]">
+        <div className="pt-5 md:pt-7">
+          <h3 className="display text-[2.6rem] leading-[0.9] tracking-[0.02em] md:text-[4rem]">
             {house.name}
           </h3>
           <p className="mt-3 text-[1.02rem] text-forest-deep/80">{house.kind}</p>
-          <p className="mt-1 text-[0.92rem] text-saddle">{house.capacity}</p>
+          {/* Вместимость отдельных домов не показываем — TODO(ночлег) в lib/wedding.ts */}
           <ul className="mt-5 flex flex-wrap gap-2">
             {house.facts.map((f) => (
               <li
@@ -132,7 +130,7 @@ export function Stay() {
   const { openBooking } = useBooking();
 
   return (
-    <section id="nochleg" aria-labelledby="stay-title" className="bg-linen py-24 text-forest-deep md:py-36">
+    <section id="nochleg" aria-labelledby="stay-title" className="bg-linen py-16 text-forest-deep md:py-24">
       <div className="mx-auto max-w-[1440px] px-4 md:px-8">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-10">
           <Reveal className="lg:col-span-7">
@@ -149,25 +147,13 @@ export function Stay() {
           </Reveal>
         </div>
 
-        <ul className="mt-10 grid gap-3 border-y border-dashed border-forest-deep/20 py-5 md:mt-14 md:grid-cols-3 md:gap-6">
-          {stay.perks.map((perk, i) => {
-            const Icon = perkIcons[i];
-            return (
-              <Reveal as="li" key={perk} delay={i * 0.06} y={12} className="flex items-center gap-3 text-[0.98rem]">
-                <Icon size={22} weight="duotone" className="shrink-0 text-saddle" />
-                {perk}
-              </Reveal>
-            );
-          })}
-        </ul>
-
-        <div className="mt-12 grid gap-16 md:mt-16 md:grid-cols-2 md:gap-8 lg:gap-12">
+        <div className="mt-8 grid gap-10 md:mt-14 md:grid-cols-2 md:gap-8 lg:gap-12">
           {houses.map((h, i) => (
             <HouseCard key={h.key} index={i} />
           ))}
         </div>
 
-        <Reveal className="mt-16 flex flex-col items-start gap-5 md:mt-20 md:flex-row md:items-center md:justify-between">
+        <Reveal className="mt-10 flex flex-col items-start gap-5 md:mt-14 md:flex-row md:items-center md:justify-between">
           {/* TODO(цены): цены домов в летний сезон «могут отличаться» (раздел 8), поэтому не показываем */}
           <p className="max-w-[46ch] text-[0.95rem] leading-relaxed text-forest-deep/70">
             Стоимость ночлега в сезон свадеб назовём, когда обсудим вашу дату.

@@ -9,8 +9,9 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { ArrowRight } from "@phosphor-icons/react";
-import { heroMedia } from "@/lib/media";
+import { ArrowDown, ArrowRight, Gift } from "@phosphor-icons/react";
+import { heroInset, heroMedia } from "@/lib/media";
+import { venueDays } from "@/lib/wedding";
 import { useBooking } from "@/components/site/booking-provider";
 import { LazyVideo } from "@/components/ui/lazy-video";
 import { Magnetic } from "@/components/ui/magnetic";
@@ -71,8 +72,56 @@ function HeroMedia() {
       preload
       fetchPriority="high"
       sizes="(min-width: 1024px) 40vw, 100vw"
-      className="photo-grade object-cover"
+      // Телефон: кадр прижат вправо — пара слева, справа над ней арка-вставка
+      className="photo-grade object-cover max-lg:object-[88%_50%]"
     />
+  );
+}
+
+// Минимальная цена площадки (раздел 7): пн-чт, июнь-сентябрь
+const MIN_VENUE = Math.min(...venueDays.map((d) => d.price)).toLocaleString("ru-RU");
+
+// Арка-вставка с роликом 06: невеста с лошадьми. Телефон ~180×240 справа вверху (на низких экранах
+// меньше) — крепится к секции; десктоп ~260×340 у левого нижнего края большой арки — крепится к арке.
+// Скрытый вариант (display: none) ролик не грузит: LazyVideo ждёт пересечения с экраном
+function Inset({ desktop = false, style }: { desktop?: boolean; style: React.CSSProperties }) {
+  return (
+    <figure
+      style={style}
+      className={`hero-fade absolute z-10 ${
+        desktop
+          ? "-left-[150px] bottom-[7%] w-[260px] max-lg:hidden"
+          : "right-4 top-[calc(72px+2svh)] w-[min(180px,21svh)] md:right-8 lg:hidden"
+      }`}
+    >
+      <div className={`relative ${desktop ? "aspect-[13/17]" : "aspect-[3/4]"}`}>
+        <div aria-hidden className="arch pointer-events-none absolute -inset-2 border border-dashed border-brass/70" />
+        <LazyVideo
+          video={heroInset}
+          cap={false}
+          ratio={false}
+          className="arch absolute inset-0 shadow-[0_24px_50px_-18px_rgb(0_0_0/0.8)]"
+        />
+      </div>
+      <figcaption className="relative -mt-5 flex justify-center">
+        <span
+          className={`flex items-center gap-1.5 rounded-full bg-brass py-1.5 font-semibold leading-tight text-forest-deep shadow-[0_8px_20px_-8px_rgb(0_0_0/0.6)] ${
+            desktop ? "px-4 text-[0.82rem]" : "px-3 text-[0.72rem]"
+          }`}
+        >
+          <Gift size={14} weight="fill" className="shrink-0" />
+          {desktop ? (
+            <span className="whitespace-nowrap">Выезд невесты верхом — в подарок</span>
+          ) : (
+            <span className="whitespace-nowrap">
+              Выезд невесты
+              <br />
+              верхом — в подарок
+            </span>
+          )}
+        </span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -145,11 +194,13 @@ export function Hero() {
       />
 
       <div className="mx-auto grid min-h-[inherit] max-w-[1440px] px-4 md:px-8 lg:grid-cols-12 lg:items-center lg:gap-8">
-        {/* Медиа: на телефоне — весь экран, на десктопе — арка справа */}
+        {/* Медиа: на телефоне — весь экран, сдвинут вверх на 30%, чтобы пара (нижняя треть кадра)
+            оказалась над текстом; на десктопе — арка справа */}
         <motion.div
-          className="absolute inset-0 -z-10 lg:relative lg:inset-auto lg:z-0 lg:order-2 lg:col-span-5 lg:col-start-8 lg:aspect-[3/4] lg:h-[min(74svh,780px)] lg:justify-self-end"
+          className="absolute inset-0 -z-10 max-lg:-translate-y-[30%] lg:relative lg:inset-auto lg:z-0 lg:order-2 lg:col-span-5 lg:col-start-8 lg:aspect-[3/4] lg:h-[min(74svh,780px)] lg:justify-self-end"
           style={parallax ? { x: archX, y: archY } : undefined}
         >
+          <Inset desktop style={delay(0.7)} />
           <div
             aria-hidden
             className="arch pointer-events-none absolute -inset-3.5 hidden border border-dashed border-brass/55 lg:block"
@@ -165,11 +216,13 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* Телефон: затемнение сверху под шапку и снизу под заголовок */}
+        {/* Телефон: затемнение сверху под шапку, окно без затемнения над парой, снизу — под текст.
+            Фото сдвинуто вверх и кончается на 70% высоты: ниже только тёмный фон */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(20_28_23/0.6)_0%,rgb(20_28_23/0.1)_16%,rgb(20_28_23/0.45)_38%,rgb(20_28_23/0.82)_58%,rgb(20_28_23/0.9)_78%,rgb(20_28_23)_100%)] lg:hidden"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(20_28_23/0.6)_0%,rgb(20_28_23/0.05)_14%,rgb(20_28_23/0.05)_34%,rgb(20_28_23/0.55)_46%,rgb(20_28_23/0.88)_58%,rgb(20_28_23)_70%)] lg:hidden"
         />
+        <Inset style={delay(0.7)} />
 
         <motion.div
           className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-[calc(2.25rem+env(safe-area-inset-bottom))] pt-28 lg:order-1 lg:col-span-7 lg:min-h-0 lg:justify-center lg:pb-10 lg:pt-28"
@@ -192,14 +245,13 @@ export function Hero() {
             <p
               className="hero-rise mt-7 max-w-[34ch] text-[1.02rem] leading-relaxed text-linen/85 lg:mt-9 lg:max-w-[40ch] lg:text-[1.15rem]"
             >
-              Свадьба в конной усадьбе в 23 км от Минска. Выезд невесты на регистрацию верхом и
-              фотосессия с лошадьми для молодых —{" "}
-              <em className="font-display text-[1.15em] italic text-brass">в подарок</em>.
+              Конная усадьба в 23 км от Минска. Фотосессия с лошадьми для молодых —{" "}
+              <em className="whitespace-nowrap font-display text-[1.15em] italic text-brass">в подарок</em>.
             </p>
 
             <div
               style={delay(0.85)}
-              className="hero-fade mt-8 flex flex-col gap-3 sm:flex-row sm:items-center lg:mt-11"
+              className="hero-fade mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-7 lg:mt-11"
             >
               <Magnetic>
                 <button
@@ -214,8 +266,14 @@ export function Hero() {
                   />
                 </button>
               </Magnetic>
-              <a href="#stoimost" className="btn btn-outline py-[1.1rem] text-linen">
-                Смотреть цены
+              <a
+                href="#stoimost"
+                className="group flex items-center justify-center gap-2 text-[0.98rem] text-linen/90 transition-colors hover:text-brass sm:justify-start"
+              >
+                <span className="link-underline">
+                  Площадка от <span className="tabular-nums text-linen">{MIN_VENUE}</span> руб
+                </span>
+                <ArrowDown size={16} className="transition-transform duration-300 group-hover:translate-y-0.5" />
               </a>
             </div>
           </motion.div>

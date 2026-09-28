@@ -4,10 +4,8 @@ import { faq, MAX_GUESTS, venueDays } from "@/lib/wedding";
 import { photos } from "@/lib/photos";
 import { Hero } from "@/components/wedding/hero";
 import { Marquee } from "@/components/wedding/marquee";
-import { WhyHere } from "@/components/wedding/why-here";
-import { Facts } from "@/components/wedding/facts";
+import { Intro } from "@/components/wedding/facts";
 import { DayStory } from "@/components/wedding/day-story";
-import { Ceremony } from "@/components/wedding/ceremony";
 import { Horses } from "@/components/wedding/horses";
 import { Hall } from "@/components/wedding/hall";
 import { EstateMap } from "@/components/wedding/estate-map";
@@ -104,15 +102,14 @@ export default function WeddingPage() {
       <JsonLd />
       <Hero />
       <Marquee />
-      <WhyHere />
-      <Facts />
+      <Intro />
       <DayStory />
-      <Ceremony />
+      {/* Цены сразу после сценария дня; регистрация на лугу — момент дня, отдельного блока нет */}
+      <Pricing />
       <Horses />
       <Hall />
       <EstateMap />
       <Stay />
-      <Pricing />
       <Gallery />
       <Film />
       <Reviews />

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { animate, motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { ArrowLeft, ArrowRight, ArrowsClockwise, Gift } from "@phosphor-icons/react";
-import { addons, horseCards, horseProgram, venueGifts, type HorseCardKey } from "@/lib/wedding";
+import { addons, horseCards, horseCarousel, horseProgram, venueGifts, type HorseCardKey } from "@/lib/wedding";
 import { photos, type Photo } from "@/lib/photos";
 import { videos, type Video } from "@/lib/media";
 import { LazyVideo } from "@/components/ui/lazy-video";
@@ -22,16 +22,21 @@ import { useFinePointer, useReducedMotionSafe } from "@/components/ui/hooks";
 
 type CardMedia = { video: Video } | { photo: Photo; position?: string };
 
-const cardMedia: Record<HorseCardKey, CardMedia> = {
+// Каждое фото и видео на странице один раз: ролик 06 — на первом экране, фото невесты верхом
+// (riderPaint) — в «Одном дне», поэтому карточек «sunset» и «paint» в карусели нет (horseCarousel)
+const cardMedia: Partial<Record<HorseCardKey, CardMedia>> = {
   paddock: { video: videos.horsesPaddock },
   portrait: { photo: photos.girlWithHorse },
   field: { video: videos.ridersField },
-  sunset: { video: videos.brideHorsesSunset },
-  paint: { photo: photos.riderPaint, position: "object-[72%_50%]" },
+  forest: { photo: photos.whiteHorseForest, position: "object-[50%_40%]" },
   stable: { photo: photos.horseMuzzle, position: "object-[38%_50%]" },
 };
 
-const N = horseCards.length;
+const CARDS = horseCarousel.map((key) => ({
+  ...horseCards.find((c) => c.key === key)!,
+  media: cardMedia[key]!,
+}));
+const N = CARDS.length;
 const SPRING = { type: "spring", stiffness: 260, damping: 30, mass: 0.9 } as const;
 // Сдвиг соседней карточки в долях ширины карточки
 const STEP = 0.68;
@@ -74,8 +79,8 @@ function Card({
   flipped: boolean;
   onSelect: () => void;
 }) {
-  const card = horseCards[index];
-  const media = cardMedia[card.key];
+  const card = CARDS[index];
+  const media = card.media;
   const reduce = useReducedMotionSafe();
   const fine = useFinePointer();
   const active = offset === 0;
@@ -281,7 +286,7 @@ export function Horses() {
     <section
       id="loshadi"
       aria-labelledby="horses-title"
-      className="overflow-hidden bg-forest py-24 text-linen md:py-36"
+      className="overflow-hidden bg-forest py-16 text-linen md:py-24"
     >
       <div className="mx-auto max-w-[1440px] px-4 md:px-8">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-10">
@@ -297,13 +302,14 @@ export function Horses() {
           <Reveal delay={0.12} className="lg:col-span-4 lg:col-start-9">
             <p className="text-[1.02rem] leading-relaxed text-linen/75">
               Приезжайте посмотреть площадку вживую или просто погладить тёплые мягкие носы наших
-              лошадок. А на свадьбе выезд невесты верхом и фотосессия с лошадьми — наш подарок.
+              лошадок.
             </p>
           </Reveal>
         </div>
 
         {/* Два подарка к площадке */}
-        <ul className="mt-10 flex flex-wrap gap-3 md:mt-14">
+        {/* Подарки к площадке: здесь, на первом экране и в ценах — больше нигде */}
+        <ul className="mt-8 flex flex-wrap gap-3 md:mt-12">
           {venueGifts.map((g, i) => (
             <Reveal
               as="li"
@@ -327,7 +333,7 @@ export function Horses() {
         role="region"
         aria-roledescription="карусель"
         aria-label="Лошади усадьбы"
-        className="relative mt-14 md:mt-20"
+        className="relative mt-10 md:mt-14"
         onKeyDown={(e) => {
           if (e.key === "ArrowRight") {
             e.preventDefault();
@@ -362,7 +368,7 @@ export function Horses() {
             className="grid w-full place-items-center"
             style={{ x: dragX, transformStyle: "preserve-3d" }}
           >
-            {horseCards.map((c, i) => (
+            {CARDS.map((c, i) => (
               <Card
                 key={c.key}
                 index={i}
@@ -387,7 +393,7 @@ export function Horses() {
           <p aria-live="polite" className="min-w-[7rem] text-center text-[0.85rem] tabular-nums text-linen/70">
             <span className="text-linen">{String(active + 1).padStart(2, "0")}</span> /{" "}
             {String(N).padStart(2, "0")}
-            <span className="sr-only">: {horseCards[active].caption}</span>
+            <span className="sr-only">: {CARDS[active].caption}</span>
           </p>
           <button
             type="button"
@@ -404,7 +410,7 @@ export function Horses() {
       </div>
 
       {/* Программа с лошадьми */}
-      <div className="mx-auto mt-16 max-w-[1440px] px-4 md:mt-24 md:px-8">
+      <div className="mx-auto mt-10 max-w-[1440px] px-4 md:mt-16 md:px-8">
         <span aria-hidden className="stitch block text-brass" />
         <Reveal className="flex flex-col gap-3 pt-7 md:flex-row md:items-baseline md:gap-8">
           <p className="shrink-0 text-[0.95rem] font-semibold">
