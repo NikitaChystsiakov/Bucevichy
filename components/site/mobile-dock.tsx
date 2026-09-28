@@ -24,7 +24,7 @@ export function MobileDock() {
   });
 
   // Футер лежит под страницей (sticky) и для IntersectionObserver виден всегда, поэтому
-  // следим за меткой конца страницы (#kontakty в layout.tsx): футер открыт, когда она
+  // следим за меткой конца страницы (#kontakty в app/(v1)/layout.tsx): футер открыт, когда она
   // поднялась выше нижних 35% экрана.
   useEffect(() => {
     const end = document.getElementById("kontakty");

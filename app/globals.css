@@ -486,3 +486,248 @@ html.has-cursor [data-cursor-label],
 html.has-cursor [data-cursor-label] * {
   cursor: none;
 }
+
+/* =====================================================================
+   v2 «Приглашение» (/svadby-2, docs/concept-svadby-2.md).
+   Отдельные имена токенов: v1 выше ничего из этого не использует.
+   Тёплая бумага, шалфей, терракота; графика — тонкие линии.
+   ===================================================================== */
+@theme {
+  --color-paper: #f6efe2;
+  --color-paper-2: #ede2cc;
+  --color-sage: #a3b18a;
+  --color-sage-deep: #45523f;
+  --color-terra: #b65e38;
+  /* terra на бумаге даёт 3,95:1 — для текста и кнопок темнее: 5,3:1 на paper, 4,75:1 на paper-2 */
+  --color-terra-deep: #9a4c2b;
+  --color-terra-soft: #e8c1a8;
+  --color-ink: #2e2a24;
+  --color-ink-soft: #6b6358;
+}
+
+/* Шрифты v2 подключаются в app/(v2)/layout.tsx на обёртке .v2 (переменные --ff-*), а не на <html>:
+   классы ниже берут их напрямую, поэтому работают только внутри .v2 */
+
+/* Фон под страницей v2 (оттяжка на телефоне, короткие экраны) — бумага, а не хвоя v1 */
+html:has(.v2),
+body:has(.v2) {
+  background: var(--color-paper);
+}
+
+.v2 {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--ff-commissioner), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "lnum";
+}
+.v2 ::selection {
+  background: var(--color-terra-soft);
+  color: var(--color-ink);
+}
+.v2 :focus-visible {
+  outline-color: var(--color-terra-deep);
+}
+.v2 .on-dark :focus-visible {
+  outline-color: var(--color-paper);
+}
+
+@layer components {
+  /* Фактура бумаги: статичный SVG-шум поверх цвета секции (без анимации и без слоя поверх страницы) */
+  .tex {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.24 0 0 0 0 0.2 0 0 0 0 0.14 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* То же на тёмных секциях: светлые волокна */
+  .tex-dark {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.94 0 0 0 0 0.88 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .prata {
+    font-family: var(--ff-prata), Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.08;
+  }
+  /* Рукописный акцент: 1–2 слова, не абзацы */
+  .script {
+    font-family: var(--ff-marck), cursive;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .v2-eyebrow {
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* Рамка-приглашение: две тонкие линии и уголки-орнаменты. Цвет — --frame (по умолчанию текущий).
+     Уголки — маска из одного SVG, отражённого в четыре стороны, закрашенная цветом рамки */
+  .invite-frame {
+    --frame: currentColor;
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--frame) 55%, transparent);
+  }
+  .invite-frame::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid color-mix(in srgb, var(--frame) 35%, transparent);
+    pointer-events: none;
+  }
+  .invite-frame::after {
+    --corner: 30px;
+    content: "";
+    position: absolute;
+    inset: 11px;
+    pointer-events: none;
+    background: var(--frame);
+    -webkit-mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/svg%3E") top left / var(--corner) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(40 0) scale(-1 1)'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/g%3E%3C/svg%3E") top right / var(--corner) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(0 40) scale(1 -1)'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/g%3E%3C/svg%3E") bottom left / var(--corner) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(40 40) scale(-1 -1)'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/g%3E%3C/svg%3E") bottom right / var(--corner) no-repeat;
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/svg%3E") top left / var(--corner) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(40 0) scale(-1 1)'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/g%3E%3C/svg%3E") top right / var(--corner) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(0 40) scale(1 -1)'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/g%3E%3C/svg%3E") bottom left / var(--corner) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.4' stroke-linecap='round'%3E%3Cg transform='translate(40 40) scale(-1 -1)'%3E%3Cpath d='M1.5 30C1.5 14 14 1.5 30 1.5M8.5 32C8.5 19 19 8.5 32 8.5'/%3E%3Cpath d='M6 1.5 10.5 6 6 10.5 1.5 6Z'/%3E%3C/g%3E%3C/svg%3E") bottom right / var(--corner) no-repeat;
+  }
+
+  /* Разделитель: пунктир по бокам, в центре — веточка или ромб (дочерний элемент) */
+  .v2-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .v2-rule::before,
+  .v2-rule::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-image: linear-gradient(to right, currentColor 0 4px, transparent 4px 9px);
+    background-size: 9px 1px;
+    background-repeat: repeat-x;
+    opacity: 0.55;
+  }
+
+  /* Кнопки v2: терракотовая pill, без «магнитов». Наведение — лёгкий подъём и тень */
+  .btn-v2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 1rem 1.6rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    transition:
+      transform 0.3s var(--ease-out-soft),
+      box-shadow 0.3s var(--ease-out-soft),
+      background-color 0.3s var(--ease-out-soft),
+      border-color 0.3s var(--ease-out-soft);
+  }
+  .btn-v2-terra {
+    background: var(--color-terra-deep);
+    color: var(--color-paper);
+  }
+  .btn-v2-line {
+    border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+    color: inherit;
+  }
+  @media (hover: hover) {
+    .btn-v2:hover {
+      transform: translateY(-2px);
+    }
+    .btn-v2-terra:hover {
+      box-shadow: 0 12px 24px -12px rgb(154 76 43 / 0.7);
+    }
+    .btn-v2-line:hover {
+      border-color: currentColor;
+      box-shadow: 0 10px 22px -14px rgb(46 42 36 / 0.45);
+    }
+  }
+  .btn-v2:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Открытка: лёгкий наклон и подъём при наведении мышью */
+  .postcard {
+    transition:
+      transform 0.45s var(--ease-out-soft),
+      box-shadow 0.45s var(--ease-out-soft);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .postcard:hover {
+      transform: translateY(-4px) rotate(var(--tilt, -0.8deg));
+    }
+  }
+}
+
+/* ---------- v2: интро «конверт» ----------
+   Инлайн-скрипт (components/v2/intro.tsx) ставит <html data-v2-intro="on"> только при первом заходе
+   за сессию и без reduced-motion, через 1,4 с меняет на "done". Всё остальное — CSS: страница под конвертом уже отрисована
+   сервером, конверт открывается, открытка выезжает вверх, слой растворяется. Итого 1,15 с. */
+.v2-intro {
+  display: none;
+}
+html[data-v2-intro="on"] .v2-intro {
+  display: grid;
+  animation: v2-intro-out 0.35s ease-in 0.8s forwards;
+}
+@keyframes v2-intro-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+html[data-v2-intro="on"] .v2-env-flap {
+  animation: v2-flap 0.34s var(--ease-in-out-hard) 0.08s both;
+}
+@keyframes v2-flap {
+  0% {
+    transform: rotateX(0deg);
+    z-index: 3;
+  }
+  99% {
+    z-index: 3;
+  }
+  100% {
+    transform: rotateX(180deg);
+    z-index: 0;
+  }
+}
+html[data-v2-intro="on"] .v2-env-card {
+  animation: v2-env-card 0.55s var(--ease-out-soft) 0.36s both;
+}
+@keyframes v2-env-card {
+  to {
+    transform: translateY(-62%) scale(1.06);
+  }
+}
+/* Настоящая открытка первого экрана «доезжает» на место, пока конверт растворяется */
+html[data-v2-intro="on"] .v2-hero-card {
+  animation: v2-hero-card 0.6s var(--ease-out-soft) 0.6s both;
+}
+@keyframes v2-hero-card {
+  from {
+    transform: translateY(36px) scale(0.97);
+  }
+}
+/* Медальон-фото в арке проявляется, когда арка уже прорисована (DrawOnView), а не висит в пустоте */
+@media (prefers-reduced-motion: no-preference) {
+  .v2-medallion {
+    animation: v2-medallion 0.7s ease-out 0.7s both;
+  }
+  /* Любое значение атрибута: при смене "on" → "done" задержка не меняется посреди анимации */
+  html[data-v2-intro] .v2-medallion {
+    animation-delay: 1.5s;
+  }
+}
+@keyframes v2-medallion {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}

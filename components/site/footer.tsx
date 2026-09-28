@@ -7,7 +7,7 @@ import { DemoLink } from "./demo-link";
 import { StickyReveal } from "./sticky-reveal";
 
 // Футер лежит под страницей (StickyReveal: sticky bottom-0, z-0) и открывается, когда
-// страница (обёртка в layout.tsx, z-10) докручена до конца.
+// страница (обёртка в app/(v1)/layout.tsx, z-10) докручена до конца.
 export function Footer() {
   const links = nav.flatMap((i) => (i.children ? i.children : [i]));
   const pillBase =

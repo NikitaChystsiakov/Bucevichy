@@ -69,11 +69,63 @@ function PetalBurst() {
 // offline — сервер принял запрос, но отправка заявок не настроена (демо): просим написать самим
 type Status = "idle" | "sending" | "sent" | "offline" | "error";
 
-const field =
-  "w-full rounded-[12px] border border-linen/20 bg-forest-deep/40 px-4 py-3.5 text-[16px] text-linen outline-none transition placeholder:text-linen/45 focus:border-brass focus:bg-forest-deep/60";
-const label = "text-[0.8rem] font-medium text-linen/70";
+// Оформление формы: v1 — тёмная (/svadby), v2 — бумага (/svadby-2). Логика одна.
+const styles = {
+  v1: {
+    field:
+      "w-full rounded-[12px] border border-linen/20 bg-forest-deep/40 px-4 py-3.5 text-[16px] text-linen outline-none transition placeholder:text-linen/45 focus:border-brass focus:bg-forest-deep/60",
+    label: "text-[0.8rem] font-medium text-linen/70",
+    fieldError: "border-brass",
+    error: "text-brass",
+    dateScheme: "[color-scheme:dark]",
+    optional: "font-normal text-linen/45",
+    chip: "rounded-full border border-brass/40 bg-brass/10 px-3 py-1.5 text-[0.82rem] text-linen",
+    notice: "flex gap-2.5 rounded-[14px] border border-brass/40 bg-brass/10 p-4 text-[0.92rem] leading-snug text-linen",
+    noticeIcon: "mt-px shrink-0 text-brass",
+    alert: "flex items-center gap-2 text-sm text-brass",
+    submit: "btn btn-brass w-full py-4 text-base disabled:opacity-70",
+    fineprint: "text-center text-xs text-linen/50",
+    sentIcon: "text-brass",
+    sentEyebrow: "eyebrow text-brass",
+    sentTitle: "display text-[2.2rem] leading-[1.02] md:text-[2.6rem]",
+    sentAccent: "text-brass",
+    sentText: "max-w-[40ch] text-linen/70",
+    again: "link-underline mt-2 text-sm text-linen/70",
+  },
+  v2: {
+    field:
+      "w-full rounded-[12px] border border-ink/20 bg-paper-2/60 px-4 py-3.5 text-[16px] text-ink outline-none transition placeholder:text-ink-soft/80 focus:border-terra-deep focus:bg-paper",
+    label: "text-[0.8rem] font-medium text-ink-soft",
+    fieldError: "border-terra-deep",
+    error: "text-terra-deep",
+    dateScheme: "[color-scheme:light]",
+    optional: "font-normal text-ink-soft",
+    chip: "rounded-full border border-terra/40 bg-terra-soft/50 px-3 py-1.5 text-[0.82rem] text-ink",
+    notice: "flex gap-2.5 rounded-[14px] border border-terra/40 bg-terra-soft/40 p-4 text-[0.92rem] leading-snug text-ink",
+    noticeIcon: "mt-px shrink-0 text-terra-deep",
+    alert: "flex items-center gap-2 text-sm text-terra-deep",
+    submit: "btn-v2 btn-v2-terra w-full py-4 text-base disabled:opacity-70",
+    fineprint: "text-center text-xs text-ink-soft",
+    sentIcon: "text-terra",
+    sentEyebrow: "v2-eyebrow text-terra-deep",
+    sentTitle: "prata text-[2rem] leading-[1.1] md:text-[2.3rem]",
+    sentAccent: "script not-italic text-terra-deep",
+    sentText: "max-w-[40ch] text-ink-soft",
+    again: "link-underline mt-2 text-sm text-ink-soft",
+  },
+} as const;
 
-export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus?: boolean }) {
+export function LeadForm({
+  preset,
+  autoFocus,
+  variant = "v1",
+}: {
+  preset?: LeadPreset;
+  autoFocus?: boolean;
+  variant?: "v1" | "v2";
+}) {
+  const st = styles[variant];
+  const { field, label } = st;
   const id = useId();
   const [status, setStatus] = useState<Status>("idle");
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -107,6 +159,13 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
     }
   }
 
+  const submit = (
+    <button type="submit" disabled={status === "sending"} className={st.submit}>
+      {status === "sending" ? "Отправляем…" : isVisit ? "Договориться о визите" : "Узнать свободную дату"}
+      {status !== "sending" && <ArrowRight size={18} />}
+    </button>
+  );
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       {status === "sent" ? (
@@ -118,12 +177,12 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           role="status"
         >
           <PetalBurst />
-          <CheckCircle size={40} weight="light" className="text-brass" />
-          <p className="eyebrow text-brass">Заявка у нас</p>
-          <p className="display text-[2.2rem] leading-[1.02] md:text-[2.6rem]">
-            До встречи <em className="text-brass">в Буцевичах</em>
+          <CheckCircle size={40} weight="light" className={st.sentIcon} />
+          <p className={st.sentEyebrow}>Заявка у нас</p>
+          <p className={st.sentTitle}>
+            До встречи <em className={st.sentAccent}>в Буцевичах</em>
           </p>
-          <p className="max-w-[40ch] text-linen/70">
+          <p className={st.sentText}>
             {isVisit
               ? "Перезвоним и договоримся, когда вам удобно приехать посмотреть усадьбу."
               : "Перезвоним и скажем, свободна ли ваша дата."}
@@ -131,7 +190,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
           <button
             type="button"
             onClick={() => setStatus("idle")}
-            className="link-underline mt-2 text-sm text-linen/70"
+            className={st.again}
           >
             Отправить ещё одну заявку
           </button>
@@ -153,7 +212,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
                 {preset.details.map((d) => (
                   <li
                     key={d}
-                    className="rounded-full border border-brass/40 bg-brass/10 px-3 py-1.5 text-[0.82rem] text-linen"
+                    className={st.chip}
                   >
                     {d}
                   </li>
@@ -186,13 +245,13 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel"
-                className={`${field} ${phoneError ? "border-brass" : ""}`}
+                className={`${field} ${phoneError ? st.fieldError : ""}`}
                 placeholder="+375 __ ___-__-__"
                 aria-invalid={!!phoneError}
                 aria-describedby={phoneError ? `${id}-phone-err` : undefined}
               />
               {phoneError && (
-                <p id={`${id}-phone-err`} className="text-[0.8rem] text-brass">
+                <p id={`${id}-phone-err`} className={`text-[0.8rem] ${st.error}`}>
                   {phoneError}
                 </p>
               )}
@@ -208,7 +267,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
                 id={`${id}-date`}
                 name="date"
                 type="date"
-                className={`${field} [color-scheme:dark]`}
+                className={`${field} ${st.dateScheme}`}
               />
             </div>
             <div className="grid gap-2">
@@ -231,7 +290,7 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
 
           <div className="grid gap-2">
             <label htmlFor={`${id}-note`} className={label}>
-              Комментарий <span className="font-normal text-linen/45">(необязательно)</span>
+              Комментарий <span className={st.optional}>(необязательно)</span>
             </label>
             <textarea
               id={`${id}-note`}
@@ -245,37 +304,35 @@ export function LeadForm({ preset, autoFocus }: { preset?: LeadPreset; autoFocus
 
           {status === "offline" && (
             <div role="status" className="grid gap-3">
-              <p className="flex gap-2.5 rounded-[14px] border border-brass/40 bg-brass/10 p-4 text-[0.92rem] leading-snug text-linen">
-                <ChatCircleDots size={20} className="mt-px shrink-0 text-brass" />
+              <p className={st.notice}>
+                <ChatCircleDots size={20} className={st.noticeIcon} />
                 <span>
                   Онлайн-заявки заработают после запуска сайта. А пока напишите нам в Viber или Telegram
                   или позвоните — скажем, свободна ли ваша дата.
                 </span>
               </p>
-              <ContactButtons />
+              <ContactButtons variant={variant} />
             </div>
           )}
           {status === "error" && (
             <div role="alert" className="grid gap-3">
-              <p className="flex items-center gap-2 text-sm text-brass">
+              <p className={st.alert}>
                 <WarningCircle size={18} className="shrink-0" />
                 Не получилось отправить. Напишите нам в Viber или Telegram, позвоните или попробуйте ещё раз.
               </p>
-              <ContactButtons />
+              <ContactButtons variant={variant} />
             </div>
           )}
 
-          <Magnetic className="mt-1 flex" strength={0.12}>
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="btn btn-brass w-full py-4 text-base disabled:opacity-70"
-            >
-              {status === "sending" ? "Отправляем…" : isVisit ? "Договориться о визите" : "Узнать свободную дату"}
-              {status !== "sending" && <ArrowRight size={18} />}
-            </button>
-          </Magnetic>
-          <p className="text-center text-xs text-linen/50">
+          {/* В v2 кнопки без «магнитов» (docs/concept-svadby-2.md) */}
+          {variant === "v2" ? (
+            <div className="mt-1 flex">{submit}</div>
+          ) : (
+            <Magnetic className="mt-1 flex" strength={0.12}>
+              {submit}
+            </Magnetic>
+          )}
+          <p className={st.fineprint}>
             Нажимая кнопку, вы соглашаетесь на обработку персональных данных
           </p>
         </motion.form>

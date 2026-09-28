@@ -28,7 +28,7 @@ export function StickyReveal({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Метка есть всегда (layout.tsx)
+    // Метка есть всегда (app/(v1)/layout.tsx)
     const end = document.getElementById("kontakty");
     if (!end) return;
     const io = new IntersectionObserver(

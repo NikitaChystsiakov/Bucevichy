@@ -3,11 +3,6 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { BookingProvider } from "@/components/site/booking-provider";
-import { Header } from "@/components/site/header";
-import { Footer } from "@/components/site/footer";
-import { MobileDock } from "@/components/site/mobile-dock";
-import { Preloader } from "@/components/site/preloader";
-import { Cursor } from "@/components/site/cursor";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -37,31 +32,20 @@ export const viewport: Viewport = {
   themeColor: "#141c17",
 };
 
+// Общий корень двух версий страницы свадеб: только html/body, шрифты v1 и заявка.
+// Оформление v1 (шапка, футер, прелоадер, курсор, зерно) — в app/(v1)/layout.tsx,
+// v2 — в app/(v2)/layout.tsx со своими шрифтами и заявкой в стиле v2.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // suppressHydrationWarning: инлайн-скрипт прелоадера ставит data-preloader до гидратации
+    // suppressHydrationWarning: инлайн-скрипты прелоадера v1 и интро v2 ставят атрибуты на <html>
+    // до гидратации
     <html
       lang="ru"
       className={`${manrope.variable} ${cormorant.variable} antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-dvh">
-        {/* Первым в body: инлайн-скрипт решает про шторку до отрисовки остального */}
-        <Preloader />
-        <BookingProvider>
-          <Header />
-          {/* Страница лежит поверх футера и при докрутке «открывает» его (sticky reveal) */}
-          <div className="relative z-10 bg-forest-deep shadow-[0_30px_60px_-10px_rgb(0_0_0/0.6)]">
-            {children}
-            {/* Метка конца страницы: якорь «Контакты» (#kontakty) и сигнал нижней панели,
-                что открывается футер. Сам футер sticky, поэтому якорь стоит здесь, а не на нём */}
-            <div id="kontakty" aria-hidden />
-          </div>
-          <Footer />
-          <MobileDock />
-        </BookingProvider>
-        <Cursor />
-        <div className="grain" aria-hidden />
+        <BookingProvider>{children}</BookingProvider>
       </body>
     </html>
   );
