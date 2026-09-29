@@ -19,10 +19,10 @@ export const v2Links = nav.flatMap((item) =>
 export function WordmarkV2({ className = "" }: { className?: string }) {
   return (
     <span className={`flex items-center gap-2.5 leading-none ${className}`}>
-      <Horseshoe size={20} className="shrink-0 text-terra" />
+      <Horseshoe size={20} className="shrink-0 text-gold" />
       <span className="flex flex-col">
-        <span className="prata text-[1.35rem]">Буцевичи</span>
-        {/* text-ink: на фактуре paper-2 под прозрачной шапкой ink-soft давал ~4:1 */}
+        <span className="prata text-[1.35rem] text-wine">Буцевичи</span>
+        {/* text-ink: на фактуре ivory-2 под прозрачной шапкой ink-soft давал ~4:1 */}
         <span className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-ink">
           конная усадьба
         </span>

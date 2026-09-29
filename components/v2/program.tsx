@@ -1,75 +1,73 @@
-"use client";
-
-import { useRef } from "react";
-import { motion, useInView } from "motion/react";
-import { dayProgram, type ProgramKey } from "@/lib/wedding";
+import { posterPhoto, videos } from "@/lib/media";
+import { dayProgram } from "@/lib/wedding";
 import { Reveal } from "@/components/ui/motion";
-import { useReducedMotionSafe } from "@/components/ui/hooks";
-import { ArchIll, CameraIll, GarlandIll, GlassesIll, HallIll, HorseshoeIll } from "./illustrations";
+import { DuotoneImage } from "./duotone";
+import { SprigIll } from "./illustrations";
 
-const CompactHall = (p: Parameters<typeof HallIll>[0]) => <HallIll {...p} compact />;
-const CompactGarland = (p: Parameters<typeof GarlandIll>[0]) => <GarlandIll {...p} compact />;
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 
-// Иконки маленькие, поэтому линия толще в единицах viewBox — на экране она ~1,5 px
-const icons: Record<ProgramKey, { Art: typeof ArchIll; stroke: number }> = {
-  welcome: { Art: GlassesIll, stroke: 2.4 },
-  ride: { Art: HorseshoeIll, stroke: 2.4 },
-  ceremony: { Art: ArchIll, stroke: 4.6 },
-  photo: { Art: CameraIll, stroke: 2.4 },
-  banquet: { Art: CompactHall, stroke: 5 },
-  evening: { Art: CompactGarland, stroke: 3.6 },
-};
+// Лошади в леваде — кадр ролика 26 (720×1280)
+const paddock = posterPhoto(videos.horsesPaddock);
 
-// «Программа дня» — как программа в свадебном приглашении: без времени, с пометкой «примерный сценарий».
+/*
+  «Программа дня» — как печатная программа: на десктопе слева большой заголовок и фото в дуотоне
+  (колонка прилипает), справа пункты с римскими номерами I–VI. Без рамки, без времени —
+  с пометкой «примерный сценарий».
+*/
 export function Program() {
-  const listRef = useRef<HTMLOListElement>(null);
-  const inView = useInView(listRef, { once: true, amount: 0.15 });
-  const reduce = useReducedMotionSafe();
-
   return (
-    <section aria-labelledby="program-title" className="tex bg-paper px-3 py-14 md:px-8 md:py-24">
-      <div className="invite-frame mx-auto max-w-[820px] text-terra">
-        <div className="px-5 py-10 text-ink sm:px-10 md:px-16 md:py-16">
-          <Reveal className="text-center">
-            <p className="v2-eyebrow text-ink-soft">Один день в Буцевичах</p>
-            <h2 id="program-title" className="prata mt-3 text-[2.1rem] md:text-[3.2rem]">
-              Программа дня
-            </h2>
-            <p className="script mt-1 text-[1.5rem] text-terra-deep md:text-[1.8rem]">примерный сценарий</p>
-          </Reveal>
-
-          <ol ref={listRef} className="relative mx-auto mt-9 grid max-w-[560px] gap-7 md:mt-12 md:gap-9">
-            {/* Пунктирная нить программы: прорастает сверху вниз (scaleY) */}
-            <motion.span
-              aria-hidden
-              className="absolute bottom-7 left-[27px] top-7 w-px origin-top bg-[linear-gradient(to_bottom,currentColor_0_5px,transparent_5px_10px)] bg-[length:1px_10px] text-terra md:left-[31px]"
-              initial={{ scaleY: 0 }}
-              animate={inView ? { scaleY: 1 } : undefined}
-              transition={reduce ? { duration: 0 } : { duration: 1.6, ease: [0.65, 0, 0.35, 1] }}
+    <section aria-labelledby="program-title" className="tex bg-ivory-2 py-16 md:py-28">
+      <div className="mx-auto grid max-w-[1280px] gap-10 px-4 md:px-8 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-5">
+          <div className="lg:sticky lg:top-24">
+            <Reveal>
+              <p className="v2-eyebrow text-wine-soft">Один день в Буцевичах</p>
+              <h2
+                id="program-title"
+                className="prata mt-4 text-[3.3rem] leading-[0.95] text-wine md:text-[5.6rem] lg:text-[4.5rem] xl:text-[5.1rem]"
+              >
+                Программа дня
+              </h2>
+              <p className="script mt-2 text-[1.8rem] text-wine-soft md:text-[2.2rem]">примерный сценарий</p>
+            </Reveal>
+            <DuotoneImage
+              photo={paddock}
+              sizes="(min-width: 1024px) 420px, 92vw"
+              className="mt-8 aspect-[16/10] w-full lg:aspect-[4/5]"
+              position="50% 58%"
+              tone="ink"
+              parallax
             />
-            {dayProgram.map((step, i) => {
-              const { Art, stroke } = icons[step.key];
-              return (
-                <Reveal as="li" key={step.key} delay={0.1 + i * 0.12} y={16} className="relative flex gap-4 md:gap-6">
-                  <span className="relative grid size-14 shrink-0 place-items-center rounded-full border border-terra/45 bg-paper text-ink md:size-16">
-                    <Art className="size-9 md:size-10" strokeWidth={stroke} delay={0.2 + i * 0.12} />
-                  </span>
-                  <div className="grid gap-1 pt-1.5 md:pt-2">
-                    <div className="flex flex-wrap items-baseline gap-x-3">
-                      <h3 className="prata text-[1.2rem] leading-snug md:text-[1.45rem]">{step.title}</h3>
-                      {step.gift && (
-                        <span className="script rounded-full bg-terra-soft px-2.5 text-[1.05rem] leading-snug text-ink">
-                          в подарок
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[0.95rem] leading-relaxed text-ink-soft">{step.text}</p>
-                  </div>
-                </Reveal>
-              );
-            })}
-          </ol>
+          </div>
         </div>
+
+        <ol className="lg:col-span-7 lg:pt-6">
+          {dayProgram.map((step, i) => (
+            <Reveal
+              as="li"
+              key={step.key}
+              delay={i * 0.06}
+              y={18}
+              className="grid grid-cols-[3.6rem_1fr] gap-x-4 border-b border-gold/45 py-6 first:pt-0 md:grid-cols-[6rem_1fr] md:gap-x-6 md:py-8"
+            >
+              <span aria-hidden className="prata text-[2.4rem] leading-none text-wine-soft md:text-[3.6rem]">
+                {ROMAN[i]}
+              </span>
+              <div className="pt-1 md:pt-2">
+                <h3 className="prata text-[1.45rem] leading-[1.15] text-ink md:text-[2rem]">
+                  {step.title}
+                  {step.gift && (
+                    <span className="script ml-3 whitespace-nowrap text-[0.9em] text-wine-soft">в подарок</span>
+                  )}
+                </h3>
+                <p className="mt-2 max-w-[48ch] text-[0.97rem] leading-relaxed text-ink-soft">{step.text}</p>
+              </div>
+            </Reveal>
+          ))}
+          <li aria-hidden className="list-none pt-8">
+            <SprigIll className="h-7 w-auto text-gold" />
+          </li>
+        </ol>
       </div>
     </section>
   );

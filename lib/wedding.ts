@@ -490,6 +490,15 @@ export const territory: { key: TerritoryKey; title: string; text: string; gift?:
   },
 ];
 
+// Крупные цифры в bento «Всё для свадьбы» (v2). Цифры и подписи — из facts выше (разделы 1, 7).
+// TODO(вместимость): «до 100» и «до 40» — спорные цифры, см. MAX_GUESTS и раздел 18.
+export const territoryFigures = {
+  hall: { value: "170", unit: "м²", label: "банкетный зал с окнами в пол" },
+  guests: { prefix: "до", value: String(MAX_GUESTS), label: "гостей на свадьбе" },
+  area: { value: "2,5", unit: "га", label: "благоустроенной территории" },
+  stay: { prefix: "до", value: "40", label: "гостей остаются на ночь" },
+} as const;
+
 // «Программа дня» как в приглашении. Пункты — из того, что усадьба даёт по разделу 7, без времени.
 // TODO(сценарий): порядок и состав шагов придуманы для демо — уточнить у клиента, как обычно проходит день.
 export type ProgramKey = "welcome" | "ride" | "ceremony" | "photo" | "banquet" | "evening";

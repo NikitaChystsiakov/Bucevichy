@@ -70,13 +70,13 @@ const sheetStyles = {
   v2: {
     backdrop: "absolute inset-0 bg-ink/45 backdrop-blur-[2px]",
     panel:
-      "tex relative max-h-[92dvh] w-full overflow-y-auto rounded-t-[20px] bg-paper px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6 text-ink shadow-[0_-20px_60px_-20px_rgb(46_42_36/0.35)] md:max-w-[560px] md:rounded-[20px] md:px-9 md:pb-9 md:pt-8",
+      "tex relative max-h-[92dvh] w-full overflow-y-auto rounded-t-[20px] bg-ivory px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6 text-ink shadow-[0_-20px_60px_-20px_rgb(35_29_26/0.35)] md:max-w-[560px] md:rounded-[20px] md:px-9 md:pb-9 md:pt-8",
     handle: "mx-auto mb-5 h-1 w-10 rounded-full bg-ink/15 md:hidden",
     close:
       "absolute right-4 top-4 grid size-10 place-items-center rounded-full text-ink-soft transition hover:bg-ink/5 hover:text-ink",
-    title: "prata pr-10 text-[1.75rem] md:text-[2.1rem]",
+    title: "prata pr-10 text-[1.9rem] text-wine md:text-[2.3rem]",
     lead: "mt-2 max-w-[42ch] text-[0.95rem] leading-relaxed text-ink-soft",
-    divider: "v2-rule my-6 text-terra",
+    divider: "gold-rule my-6",
   },
 } as const;
 
@@ -149,13 +149,7 @@ function BookingSheet({
             <div className="mt-5">
               <ContactButtons variant={variant} />
             </div>
-            {variant === "v2" ? (
-              <div className={st.divider} aria-hidden>
-                <span className="size-1.5 rotate-45 border border-current" />
-              </div>
-            ) : (
-              <div className={st.divider} />
-            )}
+            <div className={st.divider} />
             <LeadForm preset={preset ?? undefined} variant={variant} />
           </motion.div>
         </div>
@@ -179,7 +173,7 @@ function Toast({ message, variant }: { message: string | null; variant: BookingV
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
             className={
               variant === "v2"
-                ? "rounded-full border border-terra/40 bg-ink px-5 py-3 text-sm text-paper shadow-[0_12px_40px_rgb(46_42_36/0.3)]"
+                ? "rounded-full border border-gold/40 bg-ink px-5 py-3 text-sm text-ivory shadow-[0_12px_40px_rgb(35_29_26/0.3)]"
                 : "rounded-full border border-brass/40 bg-forest-deep px-5 py-3 text-sm text-linen shadow-[0_12px_40px_rgb(20_28_23/0.35)]"
             }
           >

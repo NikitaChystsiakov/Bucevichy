@@ -1,90 +1,74 @@
-import Image from "next/image";
 import { ArrowDown } from "@phosphor-icons/react/ssr";
 import { instaPhotos } from "@/lib/media";
 import { MAX_GUESTS, VENUE_MIN_PRICE } from "@/lib/wedding";
-import { HeroScene } from "./illustrations";
-import { BookButton, Diamond } from "./ui";
+import { DuotoneImage, PinnedPhoto } from "./duotone";
+import { SealStamp } from "./seal-stamp";
+import { BookButton } from "./ui";
 
 const rub = (n: number) => n.toLocaleString("ru-RU");
 
-// Проём арки в сцене HeroScene (viewBox 400×200, illustrations.tsx) в долях сцены: сюда встаёт медальон.
-// Константа здесь, а не в illustrations.tsx: тот модуль клиентский, и серверный hero получил бы
-// вместо объекта ссылку-заглушку
-const ARCH_OPENING = { left: 98 / 400, width: 84 / 400, top: 70 / 200, height: 100 / 200 };
-
-// Строка фактов открытки: всё из lib (раздел 7 и общие данные)
-const heroFacts = ["23 км от Минска", `до ${MAX_GUESTS} гостей`, `площадка от ${rub(VENUE_MIN_PRICE)} руб`];
-
-// Первый экран — открытка-приглашение в двойной рамке. Текст и кнопки — в серверном HTML,
-// интро-конверт (intro.tsx) только «довозит» открытку на место.
+/*
+  Первый экран — открытка на весь экран: плотная бумага с тиснением, двойная рамка с уголками
+  (единственное место на странице), огромный заголовок, «верхом» — рукописным и фольгой.
+  Справа приколото фото пары в дуотоне, на его угол ставится сургучная печать.
+  Текст и кнопки — в серверном HTML; интро-конверт (intro.tsx) только «довозит» открытку.
+*/
 export function Hero() {
-  const o = ARCH_OPENING;
   return (
-    <section aria-labelledby="hero-title" className="tex bg-paper-2 px-3 pb-8 pt-2 md:px-8 md:pb-14 md:pt-6">
-      <div className="v2-hero-card invite-frame mx-auto max-w-[1180px] bg-paper text-terra shadow-[0_24px_50px_-30px_rgb(46_42_36/0.45)]">
-        <div className="relative grid items-center gap-5 px-5 pb-9 pt-9 text-ink sm:px-9 md:px-12 md:py-14 lg:grid-cols-[1.15fr_1fr] lg:gap-10 lg:px-16 lg:py-16">
-          {/* Сцена: на телефоне сверху, как рисунок на открытке; на десктопе справа */}
-          <div className="relative mx-auto w-full max-w-[520px] text-ink lg:order-2 lg:max-w-none">
-            <HeroScene className="block h-auto w-full" afterIntro />
-            {/* Медальон-фото в проёме арки: ≤ 30% ширины открытки */}
-            <div
-              className="v2-medallion absolute overflow-hidden rounded-[50%] ring-1 ring-terra/60 ring-offset-[3px] ring-offset-paper"
-              style={{
-                left: `${(o.left + o.width * 0.12) * 100}%`,
-                width: `${o.width * 0.76 * 100}%`,
-                top: `${o.top * 100}%`,
-                height: `${o.height * 100}%`,
-              }}
-            >
-              <Image
-                src={instaPhotos.coupleFog.src}
-                alt={instaPhotos.coupleFog.alt}
-                fill
-                sizes="(min-width: 1024px) 120px, 80px"
-                className="object-cover object-[50%_30%]"
+    // overflow-x-clip: печать в начале анимации крупнее в 1,7 раза и не должна расширять страницу
+    // на телефоне (clip, а не hidden — секция не становится контейнером прокрутки)
+    <section aria-labelledby="hero-title" className="tex overflow-x-clip bg-ivory-2 px-2.5 pb-2.5 md:px-5 md:pb-5">
+      <div className="v2-hero-card invite-frame emboss tex relative mx-auto flex min-h-[calc(100svh-64px-10px)] max-w-[1400px] flex-col bg-ivory text-gold md:min-h-[calc(100svh-72px-20px)]">
+        <div className="relative flex flex-1 flex-col px-6 pb-8 pt-9 text-ink sm:px-10 md:px-14 md:pb-14 md:pt-14 lg:px-20 lg:pb-16">
+          {/* Приколотое фото пары и печать на его углу */}
+          <div className="absolute right-6 top-9 w-[32%] max-w-[120px] sm:max-w-[200px] md:right-14 md:top-14 lg:right-20 lg:w-[23%] lg:max-w-[310px]">
+            <PinnedPhoto rotate={3}>
+              <DuotoneImage
+                photo={instaPhotos.coupleFog}
+                sizes="(min-width: 1024px) 310px, (min-width: 640px) 200px, 120px"
+                className="aspect-[4/5]"
+                position="55% 62%"
+                parallax
+                preload
               />
-            </div>
+            </PinnedPhoto>
+            <SealStamp className="absolute -bottom-6 -right-5 w-[68px] md:-bottom-8 md:-right-8 md:w-[100px] lg:-bottom-12 lg:-right-12 lg:w-[128px]" />
           </div>
 
-          <div className="text-center lg:text-left">
-            <p className="v2-eyebrow text-ink-soft">
-              Конная усадьба «Буцевичи»
-              <span className="script mt-1 block text-[1.7rem] normal-case tracking-normal text-terra-deep md:text-[2rem]">
-                приглашает
-              </span>
-            </p>
-            <h1
-              id="hero-title"
-              className="prata mx-auto mt-4 max-w-[16ch] text-[2.05rem] leading-[1.12] min-[400px]:text-[2.25rem] md:text-[3.3rem] lg:mx-0 lg:max-w-none lg:text-[2.9rem] xl:text-[3.3rem]"
-            >
-              Свадьба, на которую невеста приезжает{" "}
-              <span className="script text-[1.22em] leading-none text-terra-deep">верхом</span>
-            </h1>
+          {/* До десктопа держим под фото место, чтобы заголовок не заехал под него на низких экранах */}
+          <p className="v2-eyebrow min-h-[9.5rem] max-w-[58%] text-wine-soft sm:min-h-[15rem] lg:min-h-0 lg:max-w-none">
+            Конная усадьба «Буцевичи»
+            <span className="script mt-1.5 block text-[1.9rem] normal-case tracking-normal text-wine md:text-[2.3rem]">
+              приглашает
+            </span>
+          </p>
 
-            <div className="v2-rule mx-auto mt-6 max-w-[320px] text-terra lg:mx-0 lg:max-w-[360px]">
-              <Diamond />
+          {/* Заголовок прижат к низу открытки; на десктопе разбит на три строки вручную,
+              чтобы первая короткая строка не упиралась в фото */}
+          <h1
+            id="hero-title"
+            className="prata mt-auto pt-10 text-[clamp(2.75rem,12.4vw,3.3rem)] leading-[1] text-wine md:text-[4.6rem] lg:pt-12 lg:text-[clamp(5.6rem,6.9vw,7.2rem)] lg:leading-[0.98]"
+          >
+            Свадьба,
+            <br className="max-lg:hidden" /> на которую невеста
+            <br className="max-lg:hidden" /> приезжает{" "}
+            <span className="script foil-text inline-block pr-2 text-[1.38em] leading-[0.8]">верхом</span>
+          </h1>
+
+          <div className="mt-7 grid gap-6 lg:mt-9 lg:flex lg:items-end lg:justify-between">
+            <div className="grid gap-3">
+              <span aria-hidden className="gold-rule block w-full max-w-[420px]" />
+              <p className="flex flex-wrap gap-x-3 gap-y-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                <span>23 км от Минска</span>
+                <span aria-hidden className="text-gold">◆</span>
+                <span>до {MAX_GUESTS} гостей</span>
+                <span aria-hidden className="text-gold max-sm:hidden">◆</span>
+                <span className="text-wine max-sm:w-full">площадка от {rub(VENUE_MIN_PRICE)} руб</span>
+              </p>
             </div>
-
-            {/* На телефоне цена — отдельной строкой, чтобы перенос не начинался с точки */}
-            <ul className="mt-4 flex flex-wrap justify-center gap-x-2 gap-y-1 text-[0.95rem] text-ink-soft lg:justify-start">
-              {heroFacts.map((f, i) => (
-                <li
-                  key={f}
-                  className={`flex items-center gap-2 ${i === 2 ? "max-sm:w-full max-sm:justify-center" : ""}`}
-                >
-                  {i > 0 && (
-                    <span aria-hidden className={`text-terra ${i === 2 ? "max-sm:hidden" : ""}`}>
-                      ·
-                    </span>
-                  )}
-                  <span className={i === 2 ? "font-medium text-ink" : ""}>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-7 grid gap-2.5 sm:flex sm:justify-center lg:justify-start">
-              <BookButton className="btn-v2 btn-v2-terra w-full py-4 sm:w-auto">Узнать свободную дату</BookButton>
-              <a href="#stoimost" className="btn-v2 btn-v2-line w-full py-4 sm:w-auto">
+            <div className="grid gap-2.5 sm:flex">
+              <BookButton className="btn-v2 btn-v2-wine w-full py-4 sm:w-auto">Узнать свободную дату</BookButton>
+              <a href="#stoimost" className="btn-v2 btn-v2-line w-full py-4 text-wine sm:w-auto">
                 Посмотреть цены
                 <ArrowDown size={16} />
               </a>

@@ -42,7 +42,7 @@ export function Header() {
         {/* Подложка проявляется после первых пикселей скролла (только opacity) */}
         <div
           aria-hidden
-          className={`tex absolute inset-0 border-b border-ink/10 bg-paper/95 backdrop-blur-md transition-opacity duration-300 ${
+          className={`tex absolute inset-0 border-b border-ink/10 bg-ivory/95 backdrop-blur-md transition-opacity duration-300 ${
             scrolled || menuOpen ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -54,7 +54,7 @@ export function Header() {
           <div className="flex items-center gap-1 sm:gap-2">
             <a
               href={contacts.phoneMain.href}
-              className="mr-3 hidden text-[0.92rem] tabular-nums text-ink transition hover:text-terra-deep lg:block"
+              className="mr-3 hidden text-[0.92rem] tabular-nums text-ink transition hover:text-wine lg:block"
             >
               {contacts.phoneMain.display}
             </a>
@@ -68,7 +68,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => openBooking()}
-              className="btn-v2 btn-v2-terra px-4 py-3 text-[0.82rem] md:px-5 md:text-[0.88rem]"
+              className="btn-v2 btn-v2-wine px-4 py-3 text-[0.82rem] md:px-5 md:text-[0.88rem]"
             >
               <span className="md:hidden">Узнать дату</span>
               <span className="max-md:hidden">Узнать свободную дату</span>
@@ -113,7 +113,7 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
         <motion.div
           ref={ref}
           id="v2-menu"
-          className="tex fixed inset-0 z-[65] overflow-y-auto bg-paper pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-20 text-ink md:pt-24"
+          className="tex fixed inset-0 z-[65] overflow-y-auto bg-ivory pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-20 text-ink md:pt-24"
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
@@ -136,13 +136,13 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
                         link={link}
                         onNavigate={onClose}
                         current={!!active}
-                        className={`flex items-baseline justify-between gap-4 py-3 transition hover:text-terra-deep ${
-                          active ? "text-terra-deep" : ""
+                        className={`flex items-baseline justify-between gap-4 py-3 transition hover:text-wine ${
+                          active ? "text-wine" : ""
                         }`}
                       >
                         <span className="prata text-[1.6rem] md:text-[2rem]">
                           {link.label}
-                          {active && <span className="script ml-3 text-[1.2rem] text-terra-deep">вы здесь</span>}
+                          {active && <span className="script ml-3 text-[1.2rem] text-wine">вы здесь</span>}
                         </span>
                         {link.group && (
                           <span className="text-[0.68rem] uppercase tracking-[0.18em] text-ink-soft">
@@ -163,7 +163,7 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onClose();
                   openBooking();
                 }}
-                className="btn-v2 btn-v2-terra w-full py-4"
+                className="btn-v2 btn-v2-wine w-full py-4"
               >
                 Узнать свободную дату
               </button>
@@ -179,7 +179,7 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <a
                   href={contacts.viber}
                   aria-label="Viber"
-                  className="grid size-11 place-items-center rounded-full border border-ink/20 transition hover:border-terra-deep hover:text-terra-deep"
+                  className="grid size-11 place-items-center rounded-full border border-ink/20 transition hover:border-wine hover:text-wine"
                 >
                   <BrandIcon name="viber" size={18} />
                 </a>
@@ -188,7 +188,7 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
                   aria-label="Telegram"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="grid size-11 place-items-center rounded-full border border-ink/20 transition hover:border-terra-deep hover:text-terra-deep"
+                  className="grid size-11 place-items-center rounded-full border border-ink/20 transition hover:border-wine hover:text-wine"
                 >
                   <BrandIcon name="telegram" size={18} />
                 </a>
@@ -197,7 +197,7 @@ function Menu({ open, onClose }: { open: boolean; onClose: () => void }) {
                   aria-label="Instagram"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="grid size-11 place-items-center rounded-full border border-ink/20 transition hover:border-terra-deep hover:text-terra-deep"
+                  className="grid size-11 place-items-center rounded-full border border-ink/20 transition hover:border-wine hover:text-wine"
                 >
                   <BrandIcon name="instagram" size={18} />
                 </a>

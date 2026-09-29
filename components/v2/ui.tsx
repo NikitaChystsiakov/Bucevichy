@@ -6,7 +6,7 @@ import type { LeadPreset } from "@/components/site/lead-form";
 // Кнопка, открывающая заявку «Узнать свободную дату» (та же, что в v1, в оформлении v2)
 export function BookButton({
   children,
-  className = "btn-v2 btn-v2-terra",
+  className = "btn-v2 btn-v2-wine",
   preset,
 }: {
   children: React.ReactNode;
@@ -19,9 +19,4 @@ export function BookButton({
       {children}
     </button>
   );
-}
-
-// Ромб в центре разделителя .v2-rule
-export function Diamond({ className = "" }: { className?: string }) {
-  return <span aria-hidden className={`block size-[7px] rotate-45 border border-current ${className}`} />;
 }
