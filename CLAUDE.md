@@ -75,7 +75,7 @@ Next.js (App Router) + TypeScript + Tailwind CSS.
 - Первая версия /svadby ГОТОВА (коммит 994ed13): её вид и поведение не меняем. Пункты выше про
   «дизайн делаем заново» относятся к ней и уже выполнены.
 - Концепт v2: @docs/concept-svadby-2.md. Прогресс v2 — docs/progress-2.md.
-- Код v2: app/(v2)/svadby-2/, components/v2/*. Токены v2 — отдельные имена (paper, sage, terra…),
+- Код v2: app/(v2)/svadby-2/, components/v2/*. Токены v2 — отдельные имена (ivory, wine, gold, ink…),
   шрифты v2 подключаются только в layout v2.
 - Данные и логику берём из тех же lib/wedding.ts, lib/site.ts, lib/photos.ts; расчёт цен и отправку
   заявки не дублируем. Если чистая функция сидит внутри компонента v1 — выносим в lib, не меняя v1.

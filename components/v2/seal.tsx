@@ -64,11 +64,20 @@ export function WaxSeal({ className = "", id = "seal" }: { className?: string; i
   Круглый штамп «в подарок» — как оттиск резиновой печати: двойное кольцо, текст по кругу,
   в центре «в подарок» рукописным. Цвет — currentColor. viewBox 140×140.
 */
-export function GiftStamp({ className = "", text }: { className?: string; text: string }) {
+// id — для пути текста по кругу: у каждого штампа на странице свой
+export function GiftStamp({
+  className = "",
+  text,
+  id = "gift-stamp",
+}: {
+  className?: string;
+  text: string;
+  id?: string;
+}) {
   return (
     <svg viewBox="0 0 140 140" className={className} role="img" aria-label={`В подарок: ${text}`}>
       <defs>
-        <path id="gift-stamp-circle" d="M70 70m-51 0a51 51 0 1 1 102 0a51 51 0 1 1 -102 0" />
+        <path id={`${id}-circle`} d="M70 70m-51 0a51 51 0 1 1 102 0a51 51 0 1 1 -102 0" />
       </defs>
       <circle cx="70" cy="70" r="66" fill="none" stroke="currentColor" strokeWidth="2.4" />
       <circle cx="70" cy="70" r="61" fill="none" stroke="currentColor" strokeWidth="0.9" />
@@ -80,7 +89,7 @@ export function GiftStamp({ className = "", text }: { className?: string; text: 
         letterSpacing="2.1"
         style={{ fontFamily: "var(--ff-commissioner), sans-serif", textTransform: "uppercase" }}
       >
-        <textPath href="#gift-stamp-circle" startOffset="0">
+        <textPath href={`#${id}-circle`} startOffset="0">
           {text}
         </textPath>
       </text>

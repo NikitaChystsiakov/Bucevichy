@@ -558,6 +558,9 @@ body:has(.v2) {
     font-family: var(--ff-marck), cursive;
     font-weight: 400;
     letter-spacing: 0;
+    /* Пробел в Marck Script 0,48em — почти вдвое шире обычного: «с  душой!», «в  пол» читались как
+       двойной. Сужаем до ~0,26em */
+    word-spacing: -0.22em;
   }
   .v2-eyebrow {
     font-size: 0.72rem;
@@ -779,4 +782,78 @@ html[data-v2-intro="on"] .v2-hero-card {
   from {
     transform: translateY(36px) scale(0.97);
   }
+}
+
+/* ---------- v2: этап 2 (стоимость, лента фото, FAQ) ---------- */
+@layer components {
+  /* Отточия в прайсе «как меню»: точки от названия до цены по базовой линии */
+  .v2-leader {
+    flex: 1 1 auto;
+    min-width: 1.5rem;
+    height: 0.9em;
+    background-image: radial-gradient(circle, currentColor 1px, transparent 1.4px);
+    background-size: 7px 4px;
+    background-repeat: repeat-x;
+    background-position: left bottom;
+    opacity: 0.55;
+  }
+}
+
+/* Ползунок калькулятора v2: тонкая золотая нить, бегунок — сургуч */
+.range-v2 {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 32px;
+  background: transparent;
+  cursor: pointer;
+}
+.range-v2::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-wine) var(--fill, 50%),
+    rgb(35 29 26 / 0.2) var(--fill, 50%)
+  );
+  border-radius: 2px;
+}
+.range-v2::-moz-range-track {
+  height: 2px;
+  background: rgb(35 29 26 / 0.2);
+}
+.range-v2::-moz-range-progress {
+  height: 2px;
+  background: var(--color-wine);
+}
+.range-v2::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -11px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 36% 30%, #a4485a, #5e1f2b 60%, #3f1219);
+  border: 3px solid var(--color-ivory);
+  box-shadow: 0 0 0 1px var(--color-gold), 0 2px 4px rgb(35 29 26 / 0.3);
+}
+.range-v2::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--color-wine);
+  border: 3px solid var(--color-ivory);
+  box-shadow: 0 0 0 1px var(--color-gold);
+}
+.range-v2:focus-visible {
+  outline: 2px solid var(--color-wine);
+  outline-offset: 4px;
+}
+
+/* Лента полароидов: нативная прокрутка со снапом (свайп пальцем, тачпад), без полосы */
+.v2-strip {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.v2-strip::-webkit-scrollbar {
+  display: none;
 }

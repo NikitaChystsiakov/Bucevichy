@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/v2/hero";
 import { Territory } from "@/components/v2/territory";
+import { Horses } from "@/components/v2/horses";
 import { Program } from "@/components/v2/program";
+import { Hall } from "@/components/v2/hall";
+import { Pricing } from "@/components/v2/pricing";
+import { Gallery } from "@/components/v2/gallery";
+import { Reviews } from "@/components/v2/reviews";
+import { BookingSteps } from "@/components/v2/booking-steps";
+import { Faq } from "@/components/v2/faq";
+import { Directions } from "@/components/v2/directions";
+import { Rsvp } from "@/components/v2/rsvp";
 
 // Вторая версия страницы свадеб — альтернатива для выбора владельцами. Основная — /svadby,
 // поэтому canonical указывает на неё, а JSON-LD здесь не дублируем. noindex — из общего layout.
@@ -20,8 +29,16 @@ export default function WeddingPageV2() {
     <main id="top">
       <Hero />
       <Territory />
+      <Horses />
       <Program />
-      {/* Этап 2: стоимость (#stoimost), фото, отзывы, FAQ, «Ждём вас в Буцевичах» */}
+      <Hall />
+      <Pricing />
+      <Gallery />
+      <Reviews />
+      <BookingSteps />
+      <Faq />
+      <Directions />
+      <Rsvp />
     </main>
   );
 }

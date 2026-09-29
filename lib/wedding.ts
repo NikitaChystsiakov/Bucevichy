@@ -89,6 +89,68 @@ export const GUESTS_MIN = 10;
 export const GUESTS_MAX = MAX_GUESTS; // TODO(вместимость)
 export const GUESTS_DEFAULT = 50;
 
+// Калькулятор «Примерный бюджет» — общий для /svadby и /svadby-2. Что выбрано: день, сезон, гости
+// и дополнительные услуги (по умолчанию на странице — площадка и банкет).
+export type BudgetInput = {
+  day: DayKey;
+  season: SeasonKey;
+  guests: number;
+  program: boolean;
+  decor: boolean;
+  banquet: boolean;
+};
+
+export type Budget = {
+  venue: number;
+  program: number;
+  decor: number;
+  banquetMin: number;
+  banquetMax: number;
+  totalMin: number;
+  totalMax: number;
+};
+
+export function estimateBudget({ day, season, guests, program, decor, banquet }: BudgetInput): Budget {
+  const venue = venuePrice(day, season);
+  const programSum = program ? addons.program.pricePerGuest * guests : 0;
+  const decorSum = decor ? addons.decor.price : 0;
+  const banquetMin = banquet ? addons.banquet.pricePerGuestMin * guests : 0;
+  const banquetMax = banquet ? addons.banquet.pricePerGuestMax * guests : 0;
+  return {
+    venue,
+    program: programSum,
+    decor: decorSum,
+    banquetMin,
+    banquetMax,
+    totalMin: venue + programSum + decorSum + banquetMin,
+    totalMax: venue + programSum + decorSum + banquetMax,
+  };
+}
+
+const rubles = (n: number) => n.toLocaleString("ru-RU");
+
+// Что уходит в заявку из калькулятора: комментарий и чипы над формой (тот же вид, что LeadPreset)
+export function budgetRequest(input: BudgetInput, budget: Budget) {
+  const dayLabel = venueDays.find((d) => d.key === input.day)!.label;
+  const seasonLabel = seasons.find((s) => s.key === input.season)!.label;
+  const parts = [
+    `${dayLabel}, ${seasonLabel.toLowerCase()}`,
+    `${input.guests} гостей`,
+    input.program && "программа",
+    input.decor && "оформление",
+    input.banquet && "банкет",
+  ].filter(Boolean);
+  const sum =
+    budget.totalMin === budget.totalMax
+      ? `${rubles(budget.totalMin)} руб`
+      : `${rubles(budget.totalMin)}-${rubles(budget.totalMax)} руб`;
+  return {
+    guests: input.guests,
+    note: `${parts.join(", ")}. Примерный бюджет: ${sum}`,
+    details: [dayLabel, seasonLabel, `${input.guests} гостей`, `≈ ${sum}`],
+  };
+}
+
 export const facts = [
   { value: 2013, prefix: "с ", suffix: "", label: "проводим свадьбы в усадьбе" },
   { value: MAX_GUESTS, prefix: "до ", suffix: "", label: "гостей на свадьбе" }, // TODO(вместимость)
@@ -462,78 +524,133 @@ export const houses: { key: HouseKey; name: string; kind: string; capacity: stri
 // месяцы нет. Так же в описании /svadby. Уточнить у клиента, какую «цену от» показывать.
 export const VENUE_MIN_PRICE = Math.min(...venueDays.map((d) => d.price));
 
-// «Всё для свадьбы — на одной территории»: четыре карточки. Тексты по разделу 7, сокращены.
-export type TerritoryKey = "arch" | "hall" | "horses" | "stay";
-
-export const territory: { key: TerritoryKey; title: string; text: string; gift?: boolean }[] = [
-  {
-    key: "arch",
+// «Всё для свадьбы — на одной территории» (v2). Каждая тема на странице — один раз: лошади и зал
+// теперь в своих блоках, дорога — в «Как добраться». Здесь только территория. Раздел 7, сокращено.
+export const territoryV2 = {
+  lead: "Более 2,5 гектар благоустроенной территории: открытые беседки для фуршета, зоны отдыха и лаунж, уличная мебель из паллет и кресла-мешки.",
+  arch: {
     title: "Регистрация у арки из вековой сосны",
-    text: "Зелёная лужайка для выездной регистрации, для гостей — тюки сена и лавочки.",
+    text: "Живописная зелёная лужайка для выездной регистрации, для гостей — тюки сена и лавочки. Рядом уже стоит стилизованная фотозона.",
   },
-  {
-    key: "hall",
-    title: "Зал 170 м² с окнами в пол",
-    text: "Новый просторный зал из беленого дерева: огромные окна в пол и шикарные виды.",
+  evening: {
+    title: "Терраса и гирлянды",
+    text: "Большая терраса для танцпола, вечером — ретро-гирлянды в зале и на улице.",
   },
-  {
-    key: "horses",
-    title: "Невеста верхом и фотосессия с лошадьми",
-    text: "Выезд невесты на регистрацию верхом и лошади с сопровождающим для фотосессии молодых.",
-    gift: true,
-  },
-  {
-    key: "stay",
+  stay: {
     // TODO(вместимость): «до 40» — со страницы свадьбы; в разделе 18 вместимость домов спорная
-    title: "Ночлег до 40 гостей и баня",
-    text: "Гости остаются на ночь в домах КАНТРИ и ШАЛЕ, на второй день — баня на дровах и мангалы.",
+    title: "Гости остаются на ночь",
+    text: "Дома КАНТРИ и ШАЛЕ, на второй день — баня на дровах и мангалы.",
+  },
+} as const;
+
+// Крупные цифры v2 (из facts выше). TODO(вместимость): «до 100» и «до 40» — спорные, см. MAX_GUESTS.
+export const territoryFigures = {
+  area: { value: "2,5", unit: "га", label: "благоустроенной территории" },
+  stay: { prefix: "до", value: "40", label: "гостей с ночлегом" },
+} as const;
+
+// «Лошади — главные гости» (v2). Подарки — раздел 7 (venueGifts), программа — horseProgram и addons.
+export const horsesV2 = {
+  // Раздел 7, сокращено: «…душистый запах сена, ощущение ласкающего ветра в волосах и тёплого дыхания лошади»
+  lead: "Бескрайние поля, душистый запах сена, ветер в волосах и тёплое дыхание лошади.",
+  // Раздел 1: «просторную добротную конюшню белорусского качества на 10 лошадей»
+  stable: { value: "10", label: "лошадей в конюшне" },
+  gifts: [
+    { title: "Выезд невесты верхом", text: "Невеста приезжает на регистрацию верхом на лошади." },
+    { title: "Фотосессия с лошадьми", text: "Для молодых выводим лошадей и даём сопровождающего." },
+  ],
+} as const;
+
+// «Зал» (v2). Раздел 7: «новый просторный банкетный зал из беленого дерева с огромными окнами в пол
+// 170 кв.м.», «для размещения до 100 гостей». Список — пункты «в стоимость входит» про зал.
+export const hallV2 = {
+  text: "Абсолютно новый просторный зал из беленого дерева. Из огромных окон открываются шикарные виды на поля.",
+  figures: {
+    area: { value: "170", unit: "м²", label: "светлый банкетный зал" },
+    guests: { prefix: "до", value: String(MAX_GUESTS), label: "гостей за столами" }, // TODO(вместимость)
+  },
+  includes: [
+    "Окна в пол в две стены",
+    "Дубовые столы в стиле эко-лофт и стулья",
+    "Ранеры на столы из нежного шифона",
+    "Ретро-гирлянды в зале и в лаунж-зоне на улице",
+  ],
+} as const;
+
+// «Что входит» в блоке «Стоимость» (v2): пункты про зал — в блоке «Зал», здесь — территория (раздел 7)
+export const priceIncludesV2 = venueIncludes[1].items;
+
+// «Как забронировать» (v2).
+// TODO(бронь): условий брони свадьбы в выгрузке нет (задаток 40% в разделе 8 — только для домов).
+// Шаги нейтральные: звонок → приезд посмотреть усадьбу → бронь даты. Уточнить у клиента.
+export const bookingSteps = [
+  {
+    key: "call",
+    title: "Узнайте, свободна ли дата",
+    // Раздел 0/14: «ОБЯЗАТЕЛЬНА ПРЕДВАРИТЕЛЬНАЯ ЗАПИСЬ»
+    text: "Позвоните или напишите в Viber и Telegram. Всё — только по предварительной записи.",
+  },
+  {
+    key: "visit",
+    title: "Приезжайте посмотреть усадьбу",
+    // Раздел 7: «увидеть площадку вживую, ощутить чувство свободы… погладить тёплые мягкие носы наших лошадок»
+    text: "Увидеть площадку вживую, ощутить простор полей вокруг или просто погладить тёплые мягкие носы наших лошадок.",
+  },
+  {
+    key: "book",
+    title: "Бронируем дату",
+    text: "Закрепляем дату за вами и обсуждаем программу, оформление и меню.", // TODO(бронь): задаток, договор
+  },
+] as const;
+
+// «Как добраться» (v2). Раздел 13. GPS — lib/site.ts (contacts.geo).
+export const directions = {
+  km: 23,
+  minutes: 17,
+  road: "по трассе Р58 на Мядель",
+  route: [
+    { dist: "14", unit: "км", text: "по трассе Р58 от МКАД до кольца Радошковичи — Мядель, там направо на Мядель" },
+    { dist: "5", unit: "км", text: "до поворота налево на «Абрыцкую Слабаду» — указатель стоит слева" },
+    { dist: "2,5", unit: "км", text: "до д. Буцевичи. В лесу второй указатель направо не нужен — прямо. Мы слева от дороги" },
+  ],
+  bus: "Маршрутка № 1466 от Комаровского рынка до Буцевич, от остановки 10 минут пешком.",
+} as const;
+
+// FAQ v2: только то, чего нет в других блоках страницы (гости, цены, визит и дорога — в своих блоках).
+// Тексты по разделу 7.
+export const faqV2 = [
+  {
+    q: "Можно ли провести маленькую камерную свадьбу?",
+    a: "Да. Мы проводим свадьбы в усадьбе с 2013 года, в том числе маленькие камерные.",
+  },
+  {
+    q: "Что входит в тематическую программу?",
+    a: `${addons.program.text} Стоимость — ${addons.program.pricePerGuest} руб с гостя.`,
+  },
+  {
+    q: "В каком стиле можно оформить свадьбу?",
+    a: `Кантри, рустик или этно. ${addons.decor.text} Базовое стилизованное оформление стоит ${rubles(addons.decor.price)} руб.`,
+  },
+  {
+    q: "Кто готовит банкет?",
+    a: "У нас собственная вкусная и качественная домашняя кухня: повар и обслуживание официантами. Банкетный ужин или фуршет — по выбранному варианту меню.",
+  },
+  {
+    q: "Есть ли фотозона?",
+    a: "Да, на территории уже установлена стационарная стилизованная фотозона.",
   },
 ];
 
-// Крупные цифры в bento «Всё для свадьбы» (v2). Цифры и подписи — из facts выше (разделы 1, 7).
-// TODO(вместимость): «до 100» и «до 40» — спорные цифры, см. MAX_GUESTS и раздел 18.
-export const territoryFigures = {
-  hall: { value: "170", unit: "м²", label: "банкетный зал с окнами в пол" },
-  guests: { prefix: "до", value: String(MAX_GUESTS), label: "гостей на свадьбе" },
-  area: { value: "2,5", unit: "га", label: "благоустроенной территории" },
-  stay: { prefix: "до", value: "40", label: "гостей остаются на ночь" },
-} as const;
-
-// «Программа дня» как в приглашении. Пункты — из того, что усадьба даёт по разделу 7, без времени.
+// «Программа дня» как в печатной программе: только названия моментов, без времени. Подробности
+// (лошади, арка, зал, гирлянды) — в своих блоках, здесь не повторяем. Моменты — из раздела 7.
 // TODO(сценарий): порядок и состав шагов придуманы для демо — уточнить у клиента, как обычно проходит день.
 export type ProgramKey = "welcome" | "ride" | "ceremony" | "photo" | "banquet" | "evening";
 
-export const dayProgram: { key: ProgramKey; title: string; text: string; gift?: boolean }[] = [
-  {
-    key: "welcome",
-    title: "Сбор гостей и фуршет",
-    text: "Открытые беседки для фуршета, лаунж-зоны, уличные диваны и столы из паллет.",
-  },
-  {
-    key: "ride",
-    title: "Выезд невесты верхом",
-    text: "Невеста приезжает на регистрацию верхом на лошади.",
-    gift: true,
-  },
-  {
-    key: "ceremony",
-    title: "Регистрация у арки",
-    text: "Живописная поляна, арка из вековой сосны, тюки сена и лавочки для гостей.",
-  },
-  {
-    key: "photo",
-    title: "Фотосессия с лошадьми",
-    text: "Для молодых выводим лошадей и даём сопровождающего.",
-    gift: true,
-  },
-  {
-    key: "banquet",
-    title: "Банкет в зале",
-    text: "Собственная домашняя кухня: повар и обслуживание официантами.",
-  },
-  {
-    key: "evening",
-    title: "Вечер под гирляндами",
-    text: "Большая терраса для танцпола и ретро-гирлянды в зале и на улице.",
-  },
+export const dayProgram: { key: ProgramKey; title: string }[] = [
+  { key: "welcome", title: "Сбор гостей и фуршет в беседках" },
+  { key: "ride", title: "Выезд невесты верхом" },
+  { key: "ceremony", title: "Регистрация у арки на лугу" },
+  { key: "photo", title: "Фотосессия с лошадьми" },
+  { key: "banquet", title: "Банкет в светлом зале" },
+  { key: "evening", title: "Танцы на террасе под гирляндами" },
 ];

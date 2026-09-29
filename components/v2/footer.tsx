@@ -4,10 +4,11 @@ import { DemoLink } from "@/components/site/demo-link";
 import { SprigIll } from "./illustrations";
 import { v2Links, WordmarkV2 } from "./brand";
 
-// Футер v2: коротко — контакты, разделы и слоган. Якорь «Контакты» (#kontakty) — здесь.
+// Футер v2: коротко — контакты, разделы и слоган. Якорь «Контакты» (#kontakty) — на блоке
+// «Ждём вас в Буцевичах» (rsvp.tsx).
 export function Footer() {
   return (
-    <footer id="kontakty" className="tex bg-ivory pt-14 text-ink md:pt-20">
+    <footer className="tex bg-ivory pt-14 text-ink md:pt-20">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <SprigIll className="h-7 w-auto text-gold" />
         <p className="prata mt-5 max-w-[16ch] text-[2.2rem] leading-[1.05] text-wine md:text-[3.6rem] lg:text-[4.2rem]">

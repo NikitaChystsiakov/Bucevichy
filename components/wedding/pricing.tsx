@@ -12,6 +12,8 @@ import {
 import { ArrowRight, Check, Gift } from "@phosphor-icons/react";
 import {
   addons,
+  budgetRequest,
+  estimateBudget,
   GUESTS_DEFAULT,
   GUESTS_MAX,
   GUESTS_MIN,
@@ -173,33 +175,16 @@ export function Pricing() {
   const [withDecor, setWithDecor] = useState(false);
   const [withBanquet, setWithBanquet] = useState(true);
 
-  const venue = venuePrice(day, season);
-  const program = withProgram ? addons.program.pricePerGuest * guests : 0;
-  const decor = withDecor ? addons.decor.price : 0;
-  const banquetMin = withBanquet ? addons.banquet.pricePerGuestMin * guests : 0;
-  const banquetMax = withBanquet ? addons.banquet.pricePerGuestMax * guests : 0;
-  const totalMin = venue + program + decor + banquetMin;
-  const totalMax = venue + program + decor + banquetMax;
+  // Расчёт и текст заявки — общие с /svadby-2 (lib/wedding.ts)
+  const input = { day, season, guests, program: withProgram, decor: withDecor, banquet: withBanquet };
+  const { venue, totalMin, totalMax } = estimateBudget(input);
 
   const dayLabel = venueDays.find((d) => d.key === day)!.label;
   const seasonLabel = seasons.find((s) => s.key === season)!.label;
   const fill = ((guests - GUESTS_MIN) / (GUESTS_MAX - GUESTS_MIN)) * 100;
 
   function book() {
-    const parts = [
-      `${dayLabel}, ${seasonLabel.toLowerCase()}`,
-      `${guests} гостей`,
-      withProgram && "программа",
-      withDecor && "оформление",
-      withBanquet && "банкет",
-    ].filter(Boolean);
-    const sum =
-      totalMin === totalMax ? `${rub(totalMin)} руб` : `${rub(totalMin)}-${rub(totalMax)} руб`;
-    openBooking({
-      guests,
-      note: `${parts.join(", ")}. Примерный бюджет: ${sum}`,
-      details: [dayLabel, seasonLabel, `${guests} гостей`, `≈ ${sum}`],
-    });
+    openBooking(budgetRequest(input, estimateBudget(input)));
   }
 
   return (

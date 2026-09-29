@@ -104,3 +104,37 @@ export const gallery: GalleryItem[] = [
   g(photos.ridersPair, "Вдвоём к лесу"),
   g(photos.forestRide, "Лесная тропа из седла"),
 ];
+
+// v2 (/svadby-2), «Как это выглядит»: полароиды на булавках. Только кадры, которых больше нет на
+// странице v2 (там уже: 22 — открытка, 18 и 13 — территория, 06 и 27 — лошади, 26 — программа,
+// 01 и зал IMG_3863 — «Зал»). Подписи — только то, что в кадре.
+// position — какую часть кадра держать в рамке полароида; box — размер кадра в лайтбоксе, если
+// край надо срезать (у постера 23 внизу плашка с текстом, у 16 вверху слева ник @verhomby).
+// TODO(фото): половина кадров — постеры роликов Instagram (540–720px), нужны оригиналы.
+export type PolaroidItem = Photo & {
+  caption: string;
+  position?: string;
+  box?: { width: number; height: number; position: string };
+};
+
+const pol = (photo: Photo, caption: string, extra: Partial<PolaroidItem> = {}): PolaroidItem => ({
+  ...photo,
+  caption,
+  ...extra,
+});
+
+export const galleryV2: PolaroidItem[] = [
+  pol(instaPhotos.nightSparklers, "Холодные фонтаны у дома", { position: "50% 45%" }),
+  pol(posterPhoto(videos.banquetOutdoor), "Банкет под открытым небом", {
+    position: "50% 70%",
+    box: { width: 540, height: 770, position: "50% 0%" },
+  }),
+  pol(instaPhotos.fourchetteTable, "Фуршет под навесом", { position: "50% 55%" }),
+  pol(posterPhoto(videos.firstDance), "Первый танец в дыму", { position: "50% 30%" }),
+  pol(instaPhotos.ringsHorseshoes, "Кольца на подковах"),
+  pol(posterPhoto(videos.eveningGazebo), "Вечер под гирляндами", {
+    position: "50% 55%",
+    box: { width: 690, height: 1050, position: "50% 100%" },
+  }),
+  pol(posterPhoto(videos.nightBonfire), "Костёр и буквы LOVE", { position: "50% 45%" }),
+];

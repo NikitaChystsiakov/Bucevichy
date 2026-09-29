@@ -32,7 +32,9 @@ export const viewport: Viewport = {
 // Своя заявка в стиле v2 (та же логика, что в v1, оформление — variant="v2").
 export default function V2Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`v2 ${prata.variable} ${marck.variable} ${commissioner.variable}`}>
+    // data-portal-root: сюда монтируются окна (лайтбокс, components/ui/modal.tsx) — внутри обёртки
+    // есть переменные шрифтов v2
+    <div data-portal-root className={`v2 ${prata.variable} ${marck.variable} ${commissioner.variable}`}>
       {/* Первым в обёртке: скрипт решает про интро до отрисовки страницы */}
       <IntroScript />
       <BookingProvider variant="v2">

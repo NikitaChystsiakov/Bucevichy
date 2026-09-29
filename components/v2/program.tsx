@@ -10,30 +10,33 @@ const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 const paddock = posterPhoto(videos.horsesPaddock);
 
 /*
-  «Программа дня» — как печатная программа: на десктопе слева большой заголовок и фото в дуотоне
-  (колонка прилипает), справа пункты с римскими номерами I–VI. Без рамки, без времени —
-  с пометкой «примерный сценарий».
+  «Программа дня» — как печатная программа: только названия моментов с римскими номерами через
+  золотые линии, без времени и описаний (подробности — в блоках «Лошади», «Зал» и других).
+  На десктопе слева большой заголовок и фото в дуотоне (колонка прилипает).
 */
 export function Program() {
   return (
-    <section aria-labelledby="program-title" className="tex bg-ivory-2 py-16 md:py-28">
-      <div className="mx-auto grid max-w-[1280px] gap-10 px-4 md:px-8 lg:grid-cols-12 lg:gap-16">
+    <section aria-labelledby="program-title" className="tex bg-ivory py-12 md:py-28">
+      <div className="mx-auto grid max-w-[1280px] gap-8 px-4 md:px-8 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
-          <div className="lg:sticky lg:top-24">
-            <Reveal>
+          {/* На телефоне и планшете заголовок во всю ширину, под ним подпись и фото рядом */}
+          <div className="grid grid-cols-[1fr_42%] items-end gap-x-5 lg:sticky lg:top-24 lg:block">
+            <Reveal className="col-span-2">
               <p className="v2-eyebrow text-wine-soft">Один день в Буцевичах</p>
               <h2
                 id="program-title"
-                className="prata mt-4 text-[3.3rem] leading-[0.95] text-wine md:text-[5.6rem] lg:text-[4.5rem] xl:text-[5.1rem]"
+                className="prata mt-4 text-[clamp(2.6rem,12vw,3rem)] leading-[0.95] text-wine md:text-[5.6rem] lg:text-[4.5rem] xl:text-[5.1rem]"
               >
                 Программа дня
               </h2>
-              <p className="script mt-2 text-[1.8rem] text-wine-soft md:text-[2.2rem]">примерный сценарий</p>
             </Reveal>
+            <p className="script self-end pb-1 text-[1.7rem] leading-tight text-wine-soft md:text-[2.2rem] lg:mt-2 lg:pb-0">
+              примерный сценарий
+            </p>
             <DuotoneImage
               photo={paddock}
-              sizes="(min-width: 1024px) 420px, 92vw"
-              className="mt-8 aspect-[16/10] w-full lg:aspect-[4/5]"
+              sizes="(min-width: 1024px) 420px, 42vw"
+              className="mt-4 aspect-[4/3] w-full md:aspect-[3/4] lg:mt-8 lg:aspect-[4/5]"
               position="50% 58%"
               tone="ink"
               parallax
@@ -48,23 +51,15 @@ export function Program() {
               key={step.key}
               delay={i * 0.06}
               y={18}
-              className="grid grid-cols-[3.6rem_1fr] gap-x-4 border-b border-gold/45 py-6 first:pt-0 md:grid-cols-[6rem_1fr] md:gap-x-6 md:py-8"
+              className="grid grid-cols-[3.4rem_1fr] items-baseline gap-x-4 border-b border-gold/45 py-4 first:pt-0 md:grid-cols-[6rem_1fr] md:gap-x-6 md:py-7"
             >
-              <span aria-hidden className="prata text-[2.4rem] leading-none text-wine-soft md:text-[3.6rem]">
+              <span aria-hidden className="prata text-[2.2rem] leading-none text-wine-soft md:text-[3.6rem]">
                 {ROMAN[i]}
               </span>
-              <div className="pt-1 md:pt-2">
-                <h3 className="prata text-[1.45rem] leading-[1.15] text-ink md:text-[2rem]">
-                  {step.title}
-                  {step.gift && (
-                    <span className="script ml-3 whitespace-nowrap text-[0.9em] text-wine-soft">в подарок</span>
-                  )}
-                </h3>
-                <p className="mt-2 max-w-[48ch] text-[0.97rem] leading-relaxed text-ink-soft">{step.text}</p>
-              </div>
+              <h3 className="prata text-[1.4rem] leading-[1.15] text-ink md:text-[2.1rem]">{step.title}</h3>
             </Reveal>
           ))}
-          <li aria-hidden className="list-none pt-8">
+          <li aria-hidden className="list-none pt-6 md:pt-8">
             <SprigIll className="h-7 w-auto text-gold" />
           </li>
         </ol>

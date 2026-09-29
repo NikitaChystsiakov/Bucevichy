@@ -70,7 +70,8 @@ export function PinnedPhoto({
 }) {
   return (
     <figure
-      className={`paper-shadow relative bg-ivory p-1.5 sm:p-2 ${className}`}
+      // relative и absolute в одном class спорили (побеждал relative) — absolute задаётся снаружи
+      className={`paper-shadow ${/(^|\s)absolute(\s|$)/.test(className) ? "" : "relative"} bg-ivory p-1.5 sm:p-2 ${className}`}
       style={{ transform: `rotate(${rotate}deg)` }}
     >
       {children}

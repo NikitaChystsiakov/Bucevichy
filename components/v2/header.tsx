@@ -47,7 +47,7 @@ export function Header() {
           }`}
         />
         <div className="relative mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-3 px-4 md:h-[72px] md:px-8">
-          <a href="#top" aria-label="Конная усадьба Буцевичи — наверх" className="shrink-0">
+          <a href="#top" aria-label="Буцевичи, конная усадьба — наверх" className="shrink-0">
             <WordmarkV2 />
           </a>
 
